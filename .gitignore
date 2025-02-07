@@ -128,3 +128,29 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+
+
+
+.env
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+
+
+# Varios de editor
+.vscode/
+.idea/
+
+# OS archivos de sistema
+.DS_Store
+Thumbs.db
+
+
+
+
+
+.package.json
+.package-lock.json
