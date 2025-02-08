@@ -149,8 +149,5 @@ yarn-error.log
 Thumbs.db
 
 
-
-
-
-.package.json
-.package-lock.json
+package.json
+package-lock.json
