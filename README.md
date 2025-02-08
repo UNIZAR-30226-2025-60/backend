@@ -1,6 +1,7 @@
-# backend
+# frontend-movil
 TUTORIAL
-
+    PASO Nº0
+        git pull origin main
     PASO Nº1
         Nos metemos en la carpeta en la que queremos trabajar (backend, frontend-movil, frontend-web) cd backend.
     PASO Nº2
@@ -22,13 +23,13 @@ TUTORIAL
         Ahora ya tenemos los cambios que hemos hecho en local subidos a una rama, pero esta no es la rama main a la que todos tienen acceso.
 
     PASO Nº4
-        Ahora haremos un  git checkout main para volver a la rama main(la compartida entre todos) y con git pull origin main me bajo los posibles cambios. Unimos nuestra rama con la compartida, git merge ramaPrueba y git push origin main (subes los cambios definitivamente a lo compartido por todos.
+        Ahora haremos un  git checkout main para volver a la rama main(la compartida entre todos) y con git pull origin main me bajo los posibles cambios. Unimos nuestra rama con la compartida, git merge ramaPrueba y git push origin main (subes los cambios definitivamente a lo compartido por todos)
 
 
 
 
 
-
+    git pull origin main(te bajas lo último que ha hecho alguien)
     git checkout -b ramaPrueba (Creas la rama con el -b y te cambias a la vez con el checkout).
     //modifico lo que quiera
     git add . (para guardar todos los cambios que has hecho).
