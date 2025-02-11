@@ -1,17 +1,22 @@
+const { Sequelize } = require('sequelize');
 const { Pool } = require('pg');
 require('dotenv').config();
 
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false }
-});
-// Prueba de conexión a PostgreSQL
-pool.query('SELECT NOW()', (err, res) => {
-    if (err) {
-        console.error('❌ Error al conectar a PostgreSQL:', err);
-    } else {
-        console.log('✅ Conectado a PostgreSQL. Hora del servidor:', res.rows[0].now);
-    }
+const DATABASE_URL = process.env.DATABASE_URL;
+
+const sequelize = new Sequelize(DATABASE_URL, {
+    dialect: 'postgres',
+    dialectOptions: {
+        ssl: {
+            require: true,
+            rejectUnauthorized: false,  //Necesario para NeonDB  
+        },
+    },
 });
 
-module.exports = pool;
+const pool = new Pool({
+    connectionString: DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+});
+
+module.exports = {sequelize, pool };
