@@ -25,6 +25,8 @@ require("dotenv").config();
 
 const { sequelize } = require("./db/db");
 const User = require("./models/User");
+const Libro = require("./models/Libro");
+const Tema = require("./models/Tema");
 
 // Importar rutas
 const authRoutes = require("./routes/authRoutes");
