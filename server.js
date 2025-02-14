@@ -33,7 +33,9 @@ const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const librosRoutes = require("./routes/libros");
 const usuariosRoutes = require("./routes/usuarios");
-const foroRoutes = require("./routes/APIforo");
+// Importar los handlers correctamente
+const { handler, handlerPreguntas } = require('./routes/APIforo');
+// const foroRoutes = require("./routes/APIforo");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -119,7 +121,8 @@ app.use("/auth", authRoutes);
 app.use("/api", userRoutes);
 app.use("/api/libros", librosRoutes);
 app.use("/api/usuarios", usuariosRoutes);
-app.use("/api", foroRoutes);
+app.get('/api/foro', handler);
+app.get('/api/preguntas', handlerPreguntas);
 
 // Iniciar servidor
 app.listen(PORT, () => {
