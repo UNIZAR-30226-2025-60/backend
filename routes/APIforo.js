@@ -28,3 +28,5 @@ async function handlerPreguntas(req, res) {
     res.status(500).json({ error: 'Error al obtener preguntas' });
   }
 };
+
+module.exports = { handler, handlerPreguntas };
