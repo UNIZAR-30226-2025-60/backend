@@ -1,4 +1,4 @@
-import { Pool } from 'pg';
+const { Pool } = require('pg');
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL, // Usa un .env para la URL de Neon
@@ -6,7 +6,7 @@ const pool = new Pool({
 });
 
 //Desde el frontend llamaremos a esta función para obtener todas las preguntas y mostrar el foro
-export const obtenerPreguntas = async () => {
+const obtenerPreguntas = async () => {
   const query = `
     SELECT p.id, p.cuestion, p.fecha_mensaje, u.correo as usuario
     FROM pregunta p
@@ -19,7 +19,7 @@ export const obtenerPreguntas = async () => {
 
 //Desde frontend tendríamos que hacer una petición GET a /api/foro con el cuerpo del usuario que ha iniciado sesión
 //para obtener las preguntas que ha hecho ese usuario
-export const obtenerPreguntasPorUsuario = async (usuarioCorreo) => {
+const obtenerPreguntasPorUsuario = async (usuarioCorreo) => {
   const query = `
     SELECT p.id, p.cuestion, p.fecha_mensaje, u.correo as usuario
     FROM pregunta p
@@ -34,7 +34,7 @@ export const obtenerPreguntasPorUsuario = async (usuarioCorreo) => {
 //En la pantalla que montemos el foro tendremos que hacer una petición GET a /api/foro para obtener todas las preguntas y sus respuestas ya ordenadas
 //por fecha de pregunta y fecha de respuesta,
 //he creado una pantalla de ejemplo en vue(cutre) pero para que se vea como se llamaría a esta función
-export const obtenerForoCompleto = async () => {
+const obtenerForoCompleto = async () => {
   const query = `
     SELECT 
       p.id as pregunta_id, p.cuestion, p.fecha_mensaje as fecha_pregunta, u.correo as usuario_pregunta,
@@ -69,3 +69,5 @@ export const obtenerForoCompleto = async () => {
   }, {});
   return Object.values(foro);
 };
+
+module.exports = { obtenerPreguntas, obtenerPreguntasPorUsuario, obtenerForoCompleto };
