@@ -1,25 +1,22 @@
 const express = require("express");
-const passport = require("passport");
-
 const router = express.Router();
 
 const { obtenerPreguntas, obtenerPreguntasPorUsuario, obtenerForoCompleto } = require('../models/foro');
 
-//obtener foro entero
-async function handler(req, res) {
-    try {
+// Ruta para obtener el foro completo
+router.get('/obtenerForoCompleto', async (req, res) => {
+  try {
     const foro = await obtenerForoCompleto();
     res.status(200).json(foro);
   } catch (error) {
     console.error('Error al obtener foro:', error);
     res.status(500).json({ error: 'Error al obtener foro' });
   }
-}
+});
 
-//si le mandamos el cuerpo de un usuario nos devolverá las preguntas que ha hecho ese usuario
-//si no le mandamos nada nos devolverá todas las preguntas
-async function handlerPreguntas(req, res) {
-    const { usuarioCorreo } = req.query;
+// Ruta para obtener preguntas con o sin usuario
+router.get('/preguntas', async (req, res) => {
+  const { usuarioCorreo } = req.query;
   try {
     const preguntas = usuarioCorreo ? await obtenerPreguntasPorUsuario(usuarioCorreo) : await obtenerPreguntas();
     res.status(200).json(preguntas);
@@ -27,6 +24,6 @@ async function handlerPreguntas(req, res) {
     console.error('Error al obtener preguntas:', error);
     res.status(500).json({ error: 'Error al obtener preguntas' });
   }
-};
+});
 
-module.exports = { handler, handlerPreguntas };
+module.exports = router;
