@@ -12,7 +12,7 @@ router.post('/registro', async (req, res) => {
         );
 
         // Iniciar sesión automáticamente después del registro
-        req.login({id: result.rows[0].correo}, (err) => {
+        req.login({correo: result.rows[0].correo}, (err) => {
             if (err) {
                 console.error('Error al iniciar sesión automáticamente:', err);
                 return res.status(500).send('Error al iniciar sesión');
