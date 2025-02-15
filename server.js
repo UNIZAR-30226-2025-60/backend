@@ -1,21 +1,3 @@
-// const express = require('express');
-// const cors = require('cors');
-// require('dotenv').config();
-
-// const app = express();
-// const PORT = process.env.PORT || 3000;
-
-// app.use(cors());
-// app.use(express.json());
-
-// const librosRoutes = require('./routes/libros');
-// const usuariosRoutes = require('./routes/usuarios');
-
-// app.use('/api/libros', librosRoutes);
-// app.use('/api/usuarios', usuariosRoutes);
-
-// app.listen(PORT, () => console.log(`Servidor corriendo en http://localhost:${PORT}`));
-
 const express = require("express");
 const cors = require("cors");
 const passport = require("passport");
@@ -25,17 +7,15 @@ require("dotenv").config();
 
 const { sequelize } = require("./db/db");
 const User = require("./models/User");
-const Libro = require("./models/Libro");
-const Tema = require("./models/Tema");
+// const Libro = require("./models/Libro");
+// const Tema = require("./models/Tema");
 
 // Importar rutas
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const librosRoutes = require("./routes/libros");
 const usuariosRoutes = require("./routes/usuarios");
-// Importar los handlers correctamente
-const { handler, handlerPreguntas } = require('./routes/APIforo');
-// const foroRoutes = require("./routes/APIforo");
+const apiForoRoutes = require('./routes/APIforo');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -121,8 +101,8 @@ app.use("/auth", authRoutes);
 app.use("/api", userRoutes);
 app.use("/api/libros", librosRoutes);
 app.use("/api/usuarios", usuariosRoutes);
-app.get('/api/foro', handler);
-app.get('/api/preguntas', handlerPreguntas);
+app.use('/api', apiForoRoutes);
+
 
 // Iniciar servidor
 app.listen(PORT, () => {
