@@ -27,4 +27,14 @@ const User = sequelize.define("User", {
     timestamps: false
 });
 
-module.exports = User;
+// Función para registrar un usuario
+const registrarUser = async (user) => {
+  try {
+    const result = await User.create(user);
+    return { rows: [result] };
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+module.exports = { User, registrarUser };

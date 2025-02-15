@@ -30,7 +30,7 @@ router.get('/', async (req, res) => {
 });
 
 //Ruta para obtener un libro en específico
-router.get('/:titulo', async (req, res) => {
+router.get('/titulo/:titulo', async (req, res) => {
     const { titulo } = req.params;
     try {
         const libro = await Libro.findOne({ where: { nombre: titulo } });
@@ -39,6 +39,17 @@ router.get('/:titulo', async (req, res) => {
         }
     } catch (error) {
         res.status(500).send('Error al obtener libro');
+    }
+});
+
+//Ruta para obtener todos los libros de una categoría
+router.get('/categoria/:categoria', async (req, res) => {
+    const { categoria } = req.params;
+    try {
+        const libros = await Libro.findAll({ where: { categoria: categoria } });
+        res.json(libros);
+    } catch (error) {
+        res.status(500).send('Error al obtener libros');
     }
 });
 
