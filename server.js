@@ -86,12 +86,12 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        let user = await User.findOne({ where: { googleId: profile.id } });
+        let user = await User.findOne({ where: { correo: profile.emails[0].value } });
         if (!user) {
           user = await User.create({
-            googleId: profile.id,
-            displayName: profile.displayName,
-            email: profile.emails[0].value,
+            correo: profile.emails[0].value,
+            nombre: profile.displayName,
+            contrasena: null,
           });
         }
         return done(null, user);
@@ -104,12 +104,12 @@ passport.use(
 
 // Serializar y deserializar usuario
 passport.serializeUser((user, done) => {
-  done(null, user.id);
+  done(null, user.correo);
 });
 
-passport.deserializeUser(async (id, done) => {
+passport.deserializeUser(async (correo, done) => {
   try {
-    const user = await User.findByPk(id);
+    const user = await User.findOne({ where: { correo } });
     done(null, user);
   } catch (error) {
     done(error, null);
