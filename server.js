@@ -6,7 +6,7 @@ const { Strategy: GoogleStrategy } = require("passport-google-oauth20");
 require("dotenv").config();
 
 const { sequelize, pool } = require("./db/db");
-const User = require("./models/User");
+const { User } = require("./models/User");
 // const Libro = require("./models/Libro");
 // const Tema = require("./models/Tema");
 
