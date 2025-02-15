@@ -53,4 +53,15 @@ router.get('/categoria/:categoria', async (req, res) => {
     }
 });
 
+//Ruta para obtener todos los libros de una categoría
+router.get('/autor/:autor', async (req, res) => {
+    const { autor } = req.params;
+    try {
+        const libros = await Libro.findAll({ where: { autor: autor } });
+        res.json(libros);
+    } catch (error) {
+        res.status(500).send('Error al obtener libros');
+    }
+});
+
 module.exports = router;
