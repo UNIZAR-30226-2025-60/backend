@@ -29,4 +29,17 @@ router.get('/', async (req, res) => {
     }
 });
 
+//Ruta para obtener un libro en específico
+router.get('/:titulo', async (req, res) => {
+    const { titulo } = req.params;
+    try {
+        const libro = await Libro.findOne({ where: { nombre: titulo } });
+        if(libro) {
+            res.json(libro);
+        }
+    } catch (error) {
+        res.status(500).send('Error al obtener libro');
+    }
+});
+
 module.exports = router;
