@@ -17,7 +17,7 @@
 // routes/libros.js
 const express = require('express');
 const router = express.Router();
-const { Libro } = require('../models/Libro');  // Importar el modelo Libro
+const { Libro, obtenerLibrosPorTematica } = require('../models/Libro');  // Importar el modelo Libro
 
 // Ruta para obtener todos los libros
 router.get('/', async (req, res) => {
@@ -42,18 +42,18 @@ router.get('/titulo/:titulo', async (req, res) => {
     }
 });
 
-//Ruta para obtener todos los libros de una categoría
-router.get('/categoria/:categoria', async (req, res) => {
-    const { categoria } = req.params;
+// Ruta para obtener libros por temática
+router.get('/tematica/:tematica', async (req, res) => {
+    const { tematica } = req.params;
     try {
-        const libros = await Libro.findAll({ where: { categoria: categoria } });
+        const libros = await obtenerLibrosPorTematica(tematica);
         res.json(libros);
     } catch (error) {
-        res.status(500).send('Error al obtener libros');
+        res.status(500).send('Error al obtener libros por temática');
     }
 });
 
-//Ruta para obtener todos los libros de una categoría
+// Ruta para obtener todos los libros de un autor
 router.get('/autor/:autor', async (req, res) => {
     const { autor } = req.params;
     try {
