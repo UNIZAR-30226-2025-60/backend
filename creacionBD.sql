@@ -19,6 +19,14 @@ CREATE TABLE LIBRO (
     tema_asociado VARCHAR(100) REFERENCES TEMA(tematica)
 );
 
+CREATE TABLE tema_asociado (
+    enlace TEXT NOT NULL,
+    tematica VARCHAR(100) NOT NULL,
+    PRIMARY KEY (enlace, tematica),
+    FOREIGN KEY (enlace) REFERENCES libro(enlace) ON DELETE CASCADE,
+    FOREIGN KEY (tematica) REFERENCES tema(tematica) ON DELETE CASCADE
+);
+
 -- Tabla de USUARIOS
 CREATE TABLE USUARIO (
     correo VARCHAR(255) PRIMARY KEY,

@@ -54,4 +54,22 @@ const Libro = sequelize.define('Libro', {
     timestamps: false,  // No usaremos createdAt / updatedAt
 });
 
-module.exports = { Libro };
+// Función para obtener libros por temática
+const obtenerLibrosPorTematica = async (tematica) => {
+    try {
+        const libros = await sequelize.query(
+            `SELECT l.* FROM libro l
+             JOIN tema_asociado t ON l.enlace = t.enlace
+             WHERE t.tematica = :tematica`,
+            {
+                replacements: { tematica },
+                type: sequelize.QueryTypes.SELECT
+            }
+        );
+        return libros;
+    } catch (error) {
+        throw new Error('Error al obtener libros por temática');
+    }
+};
+
+module.exports = { Libro, obtenerLibrosPorTematica };

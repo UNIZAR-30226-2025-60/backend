@@ -1,21 +1,3 @@
-// const express = require('express');
-// const cors = require('cors');
-// require('dotenv').config();
-
-// const app = express();
-// const PORT = process.env.PORT || 3000;
-
-// app.use(cors());
-// app.use(express.json());
-
-// const librosRoutes = require('./routes/libros');
-// const usuariosRoutes = require('./routes/usuarios');
-
-// app.use('/api/libros', librosRoutes);
-// app.use('/api/usuarios', usuariosRoutes);
-
-// app.listen(PORT, () => console.log(`Servidor corriendo en http://localhost:${PORT}`));
-
 const express = require("express");
 const cors = require("cors");
 const passport = require("passport");
@@ -94,12 +76,12 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        let user = await User.findOne({ where: { googleId: profile.id } });
+        let user = await User.findOne({ where: { correo: profile.emails[0].value } });
         if (!user) {
           user = await User.create({
-            googleId: profile.id,
-            displayName: profile.displayName,
-            email: profile.emails[0].value,
+            correo: profile.emails[0].value,
+            nombre: profile.displayName,
+            contrasena: null,
           });
         }
         return done(null, user);
@@ -112,12 +94,28 @@ passport.use(
 
 // Serializar y deserializar usuario
 passport.serializeUser((user, done) => {
-  done(null, user.id);
+  done(null, user.correo);
 });
 
-passport.deserializeUser(async (id, done) => {
+// passport.deserializeUser(async (correo, done) => {
+//   try {
+//     const user = await User.findOne({ where: { correo } });
+//     done(null, user);
+//   } catch (error) {
+//     done(error, null);
+//   }
+// });
+passport.deserializeUser(async (identifier, done) => {
   try {
-    const user = await User.findByPk(id);
+    let user;
+    if (identifier.includes('@')) {
+      // Si es un correo, busca en la tabla usuario con pool
+      const result = await pool.query('SELECT * FROM usuario WHERE correo = $1', [identifier]);
+      user = result.rows[0];
+    } else {
+      // Si no es un correo, usa Sequelize para Google OAuth
+      user = await User.findOne({ where: { id: identifier } });
+    }
     done(null, user);
   } catch (error) {
     done(error, null);
