@@ -1,17 +1,3 @@
-// const { DataTypes } = require("sequelize");
-// const { sequelize } = require("../db/db");
-
-// const User = sequelize.define("User", {
-//   googleId: {
-//     type: DataTypes.STRING,
-//     unique: true,
-//   },
-//   displayName: DataTypes.STRING,
-//   email: DataTypes.STRING,
-// });
-
-// module.exports = User;
-
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../db/db");
 
@@ -31,7 +17,7 @@ const User = sequelize.define("User", {
 const registrarUser = async (user) => {
   try {
     const result = await User.create(user);
-    return { rows: [result] };
+    return { rows: [result.get({plain: true})] };
   } catch (error) {
     throw new Error(error.message);
   }
