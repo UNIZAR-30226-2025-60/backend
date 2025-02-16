@@ -31,7 +31,7 @@ const User = sequelize.define("User", {
 const registrarUser = async (user) => {
   try {
     const result = await User.create(user);
-    return { rows: [result] };
+    return { rows: [result.get({plain: true})] };
   } catch (error) {
     throw new Error(error.message);
   }
