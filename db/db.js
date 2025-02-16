@@ -9,14 +9,31 @@ const sequelize = new Sequelize(DATABASE_URL, {
     dialectOptions: {
         ssl: {
             require: true,
-            rejectUnauthorized: false,  //Necesario para NeonDB  
+            rejectUnauthorized: false,    
         },
     },
+    logging: console.log, // Activa logs de Sequelize
 });
+
+
+// const pool = new Pool({
+//     connectionString: DATABASE_URL,
+//     ssl: { rejectUnauthorized: false }
+// });
 
 const pool = new Pool({
-    connectionString: DATABASE_URL,
-    ssl: { rejectUnauthorized: false }
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false
+    }
 });
 
+
+// const pool = new Pool({
+//     connectionString: process.env.DATABASE_URL,
+//     ssl: {
+//       rejectUnauthorized: false
+//     }
+// });
+  
 module.exports = {sequelize, pool };

@@ -24,15 +24,22 @@ const { Strategy: GoogleStrategy } = require("passport-google-oauth20");
 require("dotenv").config();
 
 const { sequelize } = require("./db/db");
-const User = require("./models/User");
-const Libro = require("./models/Libro");
-const Tema = require("./models/Tema");
+const { User } = require("./models/User");  
+const { Libro } = require("./models/Libro"); 
+const { Tema } = require("./models/Tema");  
+const { Opinion } = require("./models/Opiniones");
+const { Lista } = require("./models/Listas");
+
 
 // Importar rutas
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const librosRoutes = require("./routes/libros");
 const usuariosRoutes = require("./routes/usuarios");
+const opinionesRoutes = require("./routes/opiniones");  
+const listasRoutes = require("./routes/listas");  
+
+const { FOREIGNKEYS } = require("sequelize/lib/query-types");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -49,8 +56,12 @@ app.use(
 app.use(express.json());
 
 // Sincronizar base de datos con Sequelize
-sequelize
-  .sync({ force: false })
+// sequelize
+//   .sync({ force: false })
+//   .then(() => console.log("✅ Base de datos sincronizada."))
+//   .catch((err) => console.error("❌ Error al sincronizar DB:", err));
+
+sequelize.sync({ force: false }) // Cambia a `true` si deseas sobrescribir la estructura
   .then(() => console.log("✅ Base de datos sincronizada."))
   .catch((err) => console.error("❌ Error al sincronizar DB:", err));
 
@@ -113,11 +124,30 @@ passport.deserializeUser(async (id, done) => {
   }
 });
 
+
+(async () => {
+  try {
+      // Prueba de conexión a la base de datos
+      await sequelize.authenticate();
+      console.log('✅ Conexión a la base de datos establecida con éxito.');
+
+      // Sincronizar base de datos
+      await sequelize.sync({ force: false }); // Cambia a `true` si deseas sobrescribir la estructura
+      console.log("✅ Base de datos sincronizada.");
+  } catch (error) {
+      console.error('❌ Error al conectar o sincronizar la base de datos:', error);
+      process.exit(1); // Detiene la aplicación si no puede conectar a la base de datos
+  }
+})();
+
 // Usar rutas
 app.use("/auth", authRoutes);
 app.use("/api", userRoutes);
 app.use("/api/libros", librosRoutes);
 app.use("/api/usuarios", usuariosRoutes);
+app.use("/api/opiniones", opinionesRoutes); 
+app.use("/api/listas", listasRoutes); 
+
 
 // Iniciar servidor
 app.listen(PORT, () => {
