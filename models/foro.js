@@ -70,4 +70,20 @@ const obtenerForoCompleto = async () => {
   return Object.values(foro);
 };
 
-module.exports = { obtenerPreguntas, obtenerPreguntasPorUsuario, obtenerForoCompleto };
+// Funcion para añadir una pregunta a la base de datos
+const agregarPregunta = async (usuarioCorreo, pregunta) => {
+  const query = `
+    INSERT INTO pregunta (usuario_id, cuestion, fecha_mensaje)
+    VALUES ($1, $2, NOW()) 
+    RETURNING *;
+  `;
+  try {
+    const { rows } = await pool.query(query, [usuarioCorreo, pregunta]);
+    return rows[0]; // Devuelve la pregunta insertada
+  } catch (error) {
+    console.error("Error al insertar la pregunta:", error);
+    throw error;
+  }
+};
+
+module.exports = { obtenerPreguntas, obtenerPreguntasPorUsuario, obtenerForoCompleto, agregarPregunta };
