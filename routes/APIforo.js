@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { obtenerPreguntas, obtenerPreguntasPorUsuario, obtenerForoCompleto } = require('../models/foro');
+const { obtenerPreguntas, obtenerPreguntasPorUsuario, obtenerForoCompleto, agregarPregunta } = require('../models/foro');
 
 // Ruta para obtener el foro completo
 router.get('/obtenerForoCompleto', async (req, res) => {
@@ -23,6 +23,24 @@ router.get('/preguntas', async (req, res) => {
   } catch (error) {
     console.error('Error al obtener preguntas:', error);
     res.status(500).json({ error: 'Error al obtener preguntas' });
+  }
+});
+
+// Ruta para agregar una pregunta
+router.post('/preguntas', async (req, res) => {
+  const { usuarioCorreo, pregunta } = req.body;
+
+  // Validación de datos
+  if (!usuarioCorreo || !pregunta) {
+    return res.status(400).json({ error: "Se requieren correo de usuario y una pregunta" });
+  }
+
+  try {
+    const nuevaPregunta = await agregarPregunta(usuarioCorreo, pregunta);
+    res.status(201).json({ mensaje: "Pregunta agregada con éxito", pregunta: nuevaPregunta });
+  } catch (error) {
+    console.error('Error al agregar la pregunta:', error);
+    res.status(500).json({ error: 'Error al agregar la pregunta' });
   }
 });
 

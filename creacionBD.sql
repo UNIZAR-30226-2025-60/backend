@@ -87,7 +87,7 @@ CREATE TABLE OPINION (
 
 
 -- Tabla de PREGUNTAS en el FORO
-CREATE TABLE PREGUNTA (
+CREATE TABLE pregunta (
     id SERIAL PRIMARY KEY,  -- Identificador autogenerado
     cuestion TEXT NOT NULL,
     usuario_id VARCHAR(255) REFERENCES USUARIO(correo) ON DELETE CASCADE,
@@ -99,7 +99,7 @@ CREATE TABLE PREGUNTA (
 CREATE TABLE RESPUESTA (
     id SERIAL PRIMARY KEY,  -- Identificador autogenerado para la respuesta
     mensaje_respuesta TEXT NOT NULL,
-    pregunta_id INT NOT NULL REFERENCES PREGUNTA(id) ON DELETE CASCADE,  -- Relación con la pregunta
+    pregunta_id INT NOT NULL REFERENCES pregunta(id) ON DELETE CASCADE,  -- Relación con la pregunta
     usuario_respuesta VARCHAR(255) REFERENCES USUARIO(correo) ON DELETE CASCADE,
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
