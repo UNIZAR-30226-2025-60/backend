@@ -5,7 +5,7 @@ const session = require("express-session");
 const { Strategy: GoogleStrategy } = require("passport-google-oauth20");
 require("dotenv").config();
 
-const { sequelize } = require("./db/db");
+const { sequelize, pool } = require("./db/db");
 const { User } = require("./models/User");  
 const { Libro } = require("./models/Libro"); 
 const { Tema } = require("./models/Tema");  
@@ -98,26 +98,10 @@ passport.serializeUser((user, done) => {
   done(null, user.correo);
 });
 
-// passport.deserializeUser(async (correo, done) => {
-//   try {
-//     const user = await User.findOne({ where: { correo } });
-//     done(null, user);
-//   } catch (error) {
-//     done(error, null);
-//   }
-// });
-passport.deserializeUser(async (identifier, done) => {
+passport.deserializeUser(async (correo, done) => {
   try {
-    let user;
-    if (identifier.includes('@')) {
-      // Si es un correo, busca en la tabla usuario con pool
-      const result = await pool.query('SELECT * FROM usuario WHERE correo = $1', [identifier]);
-      user = result.rows[0];
-    } else {
-      // Si no es un correo, usa Sequelize para Google OAuth
-      user = await User.findOne({ where: { id: identifier } });
-    }
-    done(null, user);
+    const user = await User.findOne({ where: { correo } });
+    done(null, user ? user.get({ plain: true }) : null);
   } catch (error) {
     done(error, null);
   }
