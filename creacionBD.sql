@@ -1,5 +1,5 @@
 -- Tabla de TEMAS (categorías)
-CREATE TABLE TEMA (
+CREATE TABLE tema (
     tematica VARCHAR(100) PRIMARY KEY
 );
 
@@ -16,7 +16,7 @@ CREATE TABLE LIBRO (
     horas_lectura INT,
     contador_lecturas INT,
     puntuacion_media FLOAT DEFAULT 0,
-    tema_asociado VARCHAR(100) REFERENCES TEMA(tematica)
+    tema_asociado VARCHAR(100) REFERENCES tema(tematica)
 );
 
 CREATE TABLE tema_asociado (

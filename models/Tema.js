@@ -10,9 +10,9 @@ const Tema = sequelize.define("Tema", {
   }
 }, {
   // Opciones del modelo
-  tableName: "TEMA",  // Nombre de la tabla en la base de datos
+  tableName: "tema",  // Nombre de la tabla en la base de datos
   timestamps: false,  // Desactivar las columnas createdAt y updatedAt si no las necesitas
 });
 
 // Exportar el modelo
-module.exports = Tema;
+module.exports = { Tema };
