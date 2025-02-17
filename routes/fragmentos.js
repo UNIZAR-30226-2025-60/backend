@@ -30,7 +30,7 @@ router.get('/', async (req, res) => {
         });
 
         // 4. Retornar los fragmentos
-        res.status(200).json(fragmentos);
+        res.json(fragmentos);
 
     } catch (error) {
         console.error('Error al obtener fragmentos destacados:', error);
