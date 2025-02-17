@@ -17,6 +17,7 @@ const { registrarUser } = require('../models/User');
 //     }
 // });
 
+// Ruta para registrar y dejar la sesión iniciado automáticamente de un nuevo usuario en el sistema
 router.post('/registro', async (req, res) => {
     console.log('Datos recibidos en el backend:', req.body);
     const { nombre, correo, contrasena } = req.body;
@@ -52,6 +53,41 @@ router.post('/registro', async (req, res) => {
     } catch (error) {
         console.error('Error al registrar usuario y crear lista de favoritos:', error);
         res.status(500).send('Error al registrar usuario: ' + error.message);
+    }
+});
+
+// Ruta para iniciar sesión de un usuario ya registrado en el sistema
+router.post('/login', async (req, res) => {
+    const { correo, contrasena } = req.body;
+    try {
+        const result = await pool.query(
+            'SELECT * FROM USUARIO WHERE correo = $1 AND contrasena = $2',
+            [correo, contrasena]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(401).send('Correo o contraseña incorrectos');
+        }
+
+        const user = result.rows[0];
+        req.login(user, (err) => {
+            if (err) {
+                console.error('Error al iniciar sesión:', err);
+                return res.status(500).send('Error al iniciar sesión');
+            }
+            req.session.save((err) => {
+                if (err) {
+                    console.error('Error al guardar sesión:', err);
+                    return res.status(500).send('Error al guardar sesión');
+                }
+                res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8081');
+                res.setHeader('Access-Control-Allow-Credentials', 'true');
+                res.status(200).json(user);
+            });
+        });
+    } catch (error) {
+        console.error('Error al iniciar sesión:', error);
+        res.status(500).send('Error al iniciar sesión: ' + error.message);
     }
 });
 
