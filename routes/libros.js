@@ -19,6 +19,8 @@ const express = require('express');
 const router = express.Router();
 const { Libro, obtenerLibrosPorTematica } = require('../models/Libro');  // Importar el modelo Libro
 const { Tema } = require('../models/Tema');  // Importar el modelo Tema
+const { User } = require('../models/User');
+const { Leido, obtenerLibrosLeidosPorUsuario  } = require('../models/Leido');
 
 // Ruta para obtener todos los libros
 router.get('/', async (req, res) => {
@@ -73,6 +75,29 @@ router.get('/autor/:autor', async (req, res) => {
         res.json(libros);
     } catch (error) {
         res.status(500).send('Error al obtener libros');
+    }
+});
+
+// Ruta para obtener todos los libros leídos por un usuario
+router.get('/leidos/:correo', async (req, res) => {
+    const { correo } = req.params;
+
+    try {
+        // 1. Verificar si el usuario existe
+        const usuarioExistente = await User.findOne({ where: { correo } });
+        if (!usuarioExistente) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+
+        // 2. Obtener los libros leídos por el usuario
+        const librosLeidos = await obtenerLibrosLeidosPorUsuario(correo);
+
+        // 3. Retornar los libros leídos
+        res.json(librosLeidos);
+        
+    } catch (error) {
+        console.error("Error al obtener libros leídos:", error);
+        res.status(500).send('Error al obtener libros leídos');
     }
 });
 
