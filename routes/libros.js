@@ -18,28 +18,26 @@ router.get('/', async (req, res) => {
 });
 
 
-//Ruta para obtener un libro en específico (este codigo es mejor para la busqueda de libros, pero provoca que desde el front haya que cambiar alguna cosa)
-// router.get('/titulo/:titulo', async (req, res) => {
-//     const { titulo } = req.params;
-//     console.log('Título recibido:', titulo); // <-- Muestra lo que recibe
-//     try {
-//         const libros = await Libro.findAll({
-//             where: { nombre: { [Op.iLike]: `%${titulo}%` } } 
-//         });
-//         console.log('Libros encontrados:', libros); // <-- Verifica los resultados
-//         if(libros.length > 0) {
-//             res.json(libros);
-//         } else {
-//             res.status(404).send('No se encontraron libros');
-//         }
-//     } catch (error) {
-//         console.error('Error al obtener libro:', error);
-//         res.status(500).send('Error al obtener libro');
-//     }
-// });
+//Ruta para obtener un libro en específico en la lupa (este codigo es mejor para la busqueda de libros)
+ router.get('/obtenerTitulo/:titulo', async (req, res) => {
+     const { titulo } = req.params;
+     try {
+         const libros = await Libro.findAll({
+             where: { nombre: { [Op.iLike]: `%${titulo}%` } } 
+         });
+         if(libros.length > 0) {
+             res.json(libros);
+         } else {
+             res.status(404).send('No se encontraron libros');
+         }
+     } catch (error) {
+         console.error('Error al obtener libro:', error);
+         res.status(500).send('Error al obtener libro');
+     }
+ });
 
 
-//Ruta para obtener un libro en específico
+//Ruta para obtener info de un libro (al clickar un libro, se muestran los detalles del libro)
 router.get('/titulo/:titulo', async (req, res) => {
     const { titulo } = req.params;
     try {
