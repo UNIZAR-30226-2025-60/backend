@@ -7,24 +7,22 @@ const { Op } = require('sequelize');
 const { User } = require('../models/User');
 const { Leido, obtenerLibrosLeidosPorUsuario  } = require('../models/Leido');
 
-//Ruta para obtener un libro en específico
-router.get('/titulo/:titulo', async (req, res) => {
-    const { titulo } = req.params;
+// Ruta para obtener todos los libros
+router.get('/', async (req, res) => {
     try {
-        const libro = await Libro.findAll({ where: { nombre: { [Op.like]: `%${titulo}%`  } } });
-        if(libro) {
-            res.json(libro);
-        }
+        const libros = await Libro.findAll();  // Usar Sequelize para obtener todos los libros
+        res.json(libros);
     } catch (error) {
-        res.status(500).send('Error al obtener libro');
+        res.status(500).send('Error al obtener libros');
     }
 });
+
 
 //Ruta para obtener un libro en específico
 router.get('/titulo/:titulo', async (req, res) => {
     const { titulo } = req.params;
     try {
-        const libro = await Libro.findOne({ where: { nombre: titulo } });
+        const libro = await Libro.findAll({ where: { nombre: { [Op.like]: `%${titulo}%`  } } });
         if(libro) {
             res.json(libro);
         }
