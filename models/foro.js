@@ -86,4 +86,34 @@ const agregarPregunta = async (usuarioCorreo, pregunta) => {
   }
 };
 
-module.exports = { obtenerPreguntas, obtenerPreguntasPorUsuario, obtenerForoCompleto, agregarPregunta };
+// Funcion para obtener las respuestas de una pregunta
+const obtenerRespuestasPorPregunta = async (preguntaId) => {
+  const query = `
+    SELECT r.id, r.mensaje_respuesta, r.fecha, u.correo as usuario_respuesta
+    FROM respuesta r
+    JOIN usuario u ON r.usuario_respuesta = u.correo
+    WHERE r.pregunta_id = $1
+    ORDER BY r.fecha DESC;
+  `;
+  const { rows } = await pool.query(query, [preguntaId]);
+  return rows;
+};
+
+// Funcion para añadir una respuesta a la base de datos
+const agregarRespuesta = async (preguntaId, usuarioCorreo, mensaje) => {
+  const query = `
+    INSERT INTO respuesta (mensaje_respuesta, pregunta_id, usuario_respuesta, fecha)
+    VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
+    RETURNING *;
+  `;
+  try {
+    const { rows } = await pool.query(query, [mensaje, preguntaId, usuarioCorreo]);
+    return rows[0];
+  } catch (error) {
+    console.error('Error al insertar respuesta:', error);
+    throw error;
+  }
+};
+
+
+module.exports = { agregarRespuesta , obtenerRespuestasPorPregunta , obtenerPreguntas, obtenerPreguntasPorUsuario, obtenerForoCompleto, agregarPregunta };

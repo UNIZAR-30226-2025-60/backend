@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { obtenerPreguntas, obtenerPreguntasPorUsuario, obtenerForoCompleto, agregarPregunta } = require('../models/foro');
+const { agregarRespuesta , obtenerRespuestasPorPregunta , obtenerPreguntas, obtenerPreguntasPorUsuario, obtenerForoCompleto, agregarPregunta } = require('../models/foro');
 
 // Ruta para obtener el foro completo
 router.get('/obtenerForoCompleto', async (req, res) => {
@@ -41,6 +41,30 @@ router.post('/preguntas', async (req, res) => {
   } catch (error) {
     console.error('Error al agregar la pregunta:', error);
     res.status(500).json({ error: 'Error al agregar la pregunta' });
+  }
+});
+
+// Ruta para obtener respuestas de una pregunta
+router.get('/obtenerRespuestas', async (req, res) => {
+  const { preguntaId } = req.query;
+  try {
+    const respuestas = await obtenerRespuestasPorPregunta(preguntaId);
+    res.status(200).json(respuestas);
+  } catch (error) {
+    console.error('Error al obtener respuestas:', error);
+    res.status(500).json({ error: 'Error al obtener respuestas' });
+  }
+});
+
+// Ruta para agregar una respuesta
+router.post('/agregarRespuesta', async (req, res) => {
+  const { pregunta_id, usuario_respuesta, mensaje_respuesta } = req.body;
+  try {
+    const nuevaRespuesta = await agregarRespuesta(pregunta_id, usuario_respuesta, mensaje_respuesta);
+    res.status(201).json(nuevaRespuesta);
+  } catch (error) {
+    console.error('Error al agregar respuesta:', error);
+    res.status(500).json({ error: 'Error al agregar respuesta', detalle: error.message });
   }
 });
 
