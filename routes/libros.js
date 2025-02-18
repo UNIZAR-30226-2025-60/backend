@@ -1,23 +1,7 @@
-// ESTO ES LO VUESTRO (A MÍ (ARIANA), NO ME FUNCIONA)
-// const express = require('express');
-// const router = express.Router();
-// const pool = require('../db/db');
-
-// router.get('/', async (req, res) => {
-//     try {
-//         const result = await pool.query('SELECT * FROM LIBRO');
-//         res.json(result.rows);
-//     } catch (error) {
-//         console.error("ERROR EN BACK AL OBTENER LOS LIBROS:", error);
-//         res.status(500).send('Error al obtener libros');
-//     }
-// });
-
-// ESTO SÍ ME FUNCIONA
 // routes/libros.js
 const express = require('express');
 const router = express.Router();
-const { Libro, obtenerLibrosPorTematica } = require('../models/Libro');  // Importar el modelo Libro
+const { Libro, obtenerLibrosPorTematica , obtenerLibrosEnProcesoPorUsuario } = require('../models/Libro');  // Importar el modelo Libro
 const { Tema } = require('../models/Tema');  // Importar el modelo Tema
 const { Op } = require('sequelize');
 const { User } = require('../models/User');
@@ -104,5 +88,21 @@ router.get('/leidos/:correo', async (req, res) => {
         res.status(500).send('Error al obtener libros leídos');
     }
 });
+
+
+// Ruta para obtener los libros en proceso de un usuario
+router.get('/enproceso/:correo', async (req, res) => {
+    const { correo } = req.params;
+    try {
+      const usuarioExistente = await User.findOne({ where: { correo } });
+      if (!usuarioExistente) return res.status(404).json({ error: 'Usuario no encontrado' });
+  
+      const librosEnProceso = await obtenerLibrosEnProcesoPorUsuario(correo);
+      res.json(librosEnProceso);
+    } catch (error) {
+      console.error('Error al obtener libros en proceso:', error);
+      res.status(500).send('Error al obtener libros en proceso');
+    }
+  });
 
 module.exports = router;

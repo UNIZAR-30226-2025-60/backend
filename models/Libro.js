@@ -72,4 +72,21 @@ const obtenerLibrosPorTematica = async (tematica) => {
     }
 };
 
-module.exports = { Libro, obtenerLibrosPorTematica };
+
+const obtenerLibrosEnProcesoPorUsuario = async (correo) => {
+    try {
+      const libros = await sequelize.query(
+        `SELECT l.*, ep.pagina FROM en_proceso ep
+         JOIN libro l ON ep.libro_id = l.enlace
+         WHERE ep.usuario_id = :correo`,
+        { replacements: { correo }, type: sequelize.QueryTypes.SELECT }
+      );
+      return libros;
+    } catch (error) {
+      console.error('Error al obtener libros en proceso:', error);
+      throw new Error('Error al obtener libros en proceso');
+    }
+  };
+
+  
+module.exports = { Libro, obtenerLibrosPorTematica , obtenerLibrosEnProcesoPorUsuario};
