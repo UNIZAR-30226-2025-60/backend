@@ -49,4 +49,25 @@ const Opinion = sequelize.define('Opinion', {
     freezeTableName: true  // Evita que Sequelize pluralice el nombre de la tabla
 });
 
-module.exports = { Opinion };
+const agregarOpinion = async (opinionData) => {
+    try {
+        const nuevaOpinion = await Opinion.create(opinionData);
+        return nuevaOpinion;
+    } catch (error) {
+        throw new Error('Error al agregar opinión');
+    }
+};
+
+//Para probar:
+//http://localhost:3000/api/opiniones/usuario/locowin@gmail.com
+const obtenerOpinionesPorUsuario = async (usuario_id) => {
+    try {
+        const opiniones = await Opinion.findAll({ where: { usuario_id } });
+        return opiniones;
+    } catch (error) {
+        console.error('Error al obtener opiniones por usuario:', error);
+        throw error;
+    }
+};
+
+module.exports = { Opinion , agregarOpinion , obtenerOpinionesPorUsuario };
