@@ -19,14 +19,18 @@ const express = require('express');
 const router = express.Router();
 const { Libro, obtenerLibrosPorTematica } = require('../models/Libro');  // Importar el modelo Libro
 const { Tema } = require('../models/Tema');  // Importar el modelo Tema
+const { Op } = require('sequelize');
 
-// Ruta para obtener todos los libros
-router.get('/', async (req, res) => {
+//Ruta para obtener un libro en específico
+router.get('/titulo/:titulo', async (req, res) => {
+    const { titulo } = req.params;
     try {
-        const libros = await Libro.findAll();  // Usar Sequelize para obtener todos los libros
-        res.json(libros);
+        const libro = await Libro.findAll({ where: { nombre: { [Op.like]: `%${titulo}%`  } } });
+        if(libro) {
+            res.json(libro);
+        }
     } catch (error) {
-        res.status(500).send('Error al obtener libros');
+        res.status(500).send('Error al obtener libro');
     }
 });
 
