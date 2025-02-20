@@ -43,10 +43,33 @@ router.get('/titulo/:titulo', async (req, res) => {
     try {
         const libro = await Libro.findOne({ where: { nombre: titulo } });
         if(libro) {
+            await libro.update({ contador_lecturas: libro.contador_lecturas + 1});
+            
+            //Y envío al front los detalles del libro, con el número de visitias actualizado
             res.json(libro);
         }
     } catch (error) {
         res.status(500).send('Error al obtener libro');
+    }
+});
+
+//Ruta para obtener los 4 libros más populares
+router.get('/librosPopulares', async (req, res) => {
+    try {
+        const libros = await Libro.findAll({ order: [['contador_lecturas', 'DESC']], limit: 4 });
+        res.json(libros);
+    } catch (error) {
+        res.status(500).send('Error al obtener los 4 libros más populares');
+    }
+});
+
+//Ruta para obtener los todos los libros (en orden según el número de visitas)
+router.get('/librosOrdenados', async (req, res) => {
+    try {
+        const libros = await Libro.findAll({ order: [['contador_lecturas', 'DESC']]});
+        res.json(libros);
+    } catch (error) {
+        res.status(500).send('Error al obtener los libros ordenados');
     }
 });
 
