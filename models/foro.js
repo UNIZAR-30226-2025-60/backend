@@ -37,8 +37,8 @@ const obtenerPreguntasPorUsuario = async (usuarioCorreo) => {
 const obtenerForoCompleto = async () => {
   const query = `
     SELECT 
-      p.id as pregunta_id, p.cuestion, p.fecha_mensaje as fecha_pregunta, u.correo as usuario_pregunta,
-      r.id as respuesta_id, r.mensaje_respuesta, r.fecha as fecha_respuesta, ur.correo as usuario_respuesta
+      p.id as pregunta_id, p.cuestion, TO_CHAR(p.fecha_mensaje, 'DD-MM-YYYY') as fecha_pregunta, u.correo as usuario_pregunta,
+      r.id as respuesta_id, r.mensaje_respuesta, TO_CHAR(r.fecha, 'DD-MM-YYYY') as fecha_respuesta, ur.correo as usuario_respuesta
     FROM pregunta p
     JOIN usuario u ON p.usuario_id = u.correo
     LEFT JOIN respuesta r ON p.id = r.pregunta_id
