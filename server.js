@@ -30,10 +30,15 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Configuración de CORS
+const allowedOrigins = [
+  process.env.FRONTEND_URL || "http://localhost:8081",
+  process.env.RENDER_FRONTEND_URL || "https://booklyweb-469w.onrender.com"
+];
+
 app.use(
   cors({
-    origin: "http://localhost:8081", // Modificar si el frontend tiene otro origen
-    credentials: true, // Permitir envío de cookies y autenticación
+    origin: allowedOrigins,
+    credentials: true,
   })
 );
 
@@ -76,6 +81,7 @@ passport.use(
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: process.env.GOOGLE_REDIRECT_URI,
+      scope: ["profile", "email"],
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
