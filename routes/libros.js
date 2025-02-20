@@ -122,4 +122,30 @@ router.get('/enproceso/:correo', async (req, res) => {
     }
   });
 
+// Ruta para obtener los libros dado su clave primaria enlace
+//Se le llama desde front asi:
+// const libroId = encodeURIComponent(this.$route.params.id);
+// axios.get(`${API_URL}/libros/libro/${libroId}`)
+//     .then(response => console.log(response.data))
+//     .catch(error => console.error(error));
+
+router.get('/libro/:enlace', async (req, res) => {
+    try {
+        const enlace = decodeURIComponent(req.params.enlace).trim(); // Decodifica URL y elimina espacios extra
+        console.log("Buscando libro con enlace:", enlace);
+
+        const libro = await Libro.findOne({ where: { enlace } });
+
+        if (!libro) {
+            return res.status(404).json({ error: 'Libro no encontrado' });
+        }
+
+        res.json(libro);
+    } catch (error) {
+        console.error('Error al obtener atributos del libro:', error);
+        res.status(500).json({ error: 'Error al obtener el libro' });
+    }
+});
+
+
 module.exports = router;
