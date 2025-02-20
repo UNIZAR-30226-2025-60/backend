@@ -35,10 +35,22 @@ const allowedOrigins = [
   process.env.RENDER_FRONTEND_URL || "https://booklyweb-469w.onrender.com"
 ];
 
+// app.use(
+//   cors({
+//     origin: allowedOrigins,
+//     credentials: true,
+//   })
+// );
 app.use(
   cors({
-    origin: allowedOrigins,
-    credentials: true,
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true, // Permite cookies y sesiones en frontend
   })
 );
 
@@ -64,8 +76,10 @@ app.use(
     saveUninitialized: false, // Evita sesiones vacías
     cookie: {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+      // secure: false,
+      // sameSite: "lax",
+      secure: process.env.NODE_ENV === "production", // true en producción
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     },
   })
 );
@@ -80,7 +94,10 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: process.env.GOOGLE_REDIRECT_URI,
+      // callbackURL: process.env.GOOGLE_REDIRECT_URI,
+      callbackURL: process.env.NODE_ENV === "production"
+      ? process.env.RENDER_GOOGLE_REDIRECT_URI // En producción, Render
+      : process.env.GOOGLE_REDIRECT_URI,      // En local, localhost
       scope: ["profile", "email"],
     },
     async (accessToken, refreshToken, profile, done) => {
@@ -119,6 +136,7 @@ passport.deserializeUser(async (correo, done) => {
 (async () => {
   try {
       // Prueba de conexión a la base de datos
+      console.log("🛠 Conectando a la base de datos en:", process.env.DATABASE_URL);
       await sequelize.authenticate();
       console.log('✅ Conexión a la base de datos establecida con éxito.');
 
