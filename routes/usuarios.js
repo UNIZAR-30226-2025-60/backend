@@ -1,4 +1,5 @@
 const express = require('express');
+const bcrypt = require('bcrypt');  // Importa bcrypt para la encriptación
 const router = express.Router();
 const { pool } = require('../db/db');
 
@@ -22,9 +23,13 @@ router.post('/registro', async (req, res) => {
     console.log('Datos recibidos en el backend:', req.body);
     const { nombre, correo, contrasena } = req.body;
     try {
+        // Encriptar la contraseña antes de guardarla
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(contrasena, saltRounds);
+
         const userResult = await pool.query(
             'INSERT INTO USUARIO (nombre, correo, contrasena) VALUES ($1, $2, $3) RETURNING *',
-            [nombre, correo, contrasena]
+            [nombre, correo, hashedPassword]
         );
         const newUser = userResult.rows[0];
 
@@ -61,8 +66,8 @@ router.post('/login', async (req, res) => {
     const { correo, contrasena } = req.body;
     try {
         const result = await pool.query(
-            'SELECT * FROM USUARIO WHERE correo = $1 AND contrasena = $2',
-            [correo, contrasena]
+            'SELECT * FROM USUARIO WHERE correo = $1',
+            [correo]
         );
 
         if (result.rows.length === 0) {
@@ -70,6 +75,10 @@ router.post('/login', async (req, res) => {
         }
 
         const user = result.rows[0];
+        const isMatch = await bcrypt.compare(contrasena, user.contrasena);
+        if (!isMatch) {
+            return res.status(401).send('Correo o contraseña incorrectos');
+        }
         req.login(user, (err) => {
             if (err) {
                 console.error('Error al iniciar sesión:', err);
