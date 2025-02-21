@@ -1,13 +1,15 @@
 const express = require("express");
 const passport = require("passport");
-import axios from "axios";
 
 const router = express.Router();
 
-const FRONTEND_URL =
-  window.location.hostname === "localhost"
-    ? process.env.FRONTEND_URL || "http://localhost:8081"
-    : process.env.RENDER_FRONTEND_URL || "https://booklyweb-469w.onrender.com";
+// Determina si estamos en localhost o en producción
+const isLocal = process.env.NODE_ENV === "development";
+
+// Usa el FRONTEND_URL correcto según el entorno
+const FRONTEND_URL = isLocal
+  ? process.env.FRONTEND_URL || "http://localhost:8081"
+  : process.env.RENDER_FRONTEND_URL || "https://booklyweb-469w.onrender.com";
 
 
 // Ruta para iniciar sesión con Google
