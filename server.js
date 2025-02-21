@@ -35,24 +35,24 @@ const allowedOrigins = [
   process.env.RENDER_FRONTEND_URL || "https://booklyweb-469w.onrender.com"
 ];
 
-// app.use(
-//   cors({
-//     origin: allowedOrigins,
-//     credentials: true,
-//   })
-// );
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true, // Permite cookies y sesiones en frontend
+    origin: allowedOrigins,
+    credentials: true,
   })
 );
+// app.use(
+//   cors({
+//     origin: function (origin, callback) {
+//       if (!origin || allowedOrigins.includes(origin)) {
+//         callback(null, true);
+//       } else {
+//         callback(new Error("Not allowed by CORS"));
+//       }
+//     },
+//     credentials: true, // Permite cookies y sesiones en frontend
+//   })
+// );
 
 // Middleware para procesar JSON
 app.use(express.json());

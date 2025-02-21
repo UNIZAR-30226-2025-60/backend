@@ -8,10 +8,9 @@ const isLocal = process.env.NODE_ENV === "development";
 
 // Usa el FRONTEND_URL correcto según el entorno
 const FRONTEND_URL = isLocal
-  ? process.env.FRONTEND_URL || "http://localhost:8081"
-  : process.env.RENDER_FRONTEND_URL || "https://booklyweb-469w.onrender.com";
-
-
+  ? process.env.RENDER_FRONTEND_URL || "https://booklyweb-469w.onrender.com"
+  : process.env.FRONTEND_URL || "http://localhost:8081";
+  
 // Ruta para iniciar sesión con Google
 router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 
