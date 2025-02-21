@@ -27,12 +27,17 @@ CREATE TABLE tema_asociado (
     FOREIGN KEY (tematica) REFERENCES tema(tematica) ON DELETE CASCADE
 );
 
+CREATE TABLE imagen_perfil (
+    url TEXT PRIMARY KEY
+);
+
 -- Tabla de USUARIOS
 CREATE TABLE USUARIO (
     correo VARCHAR(255) PRIMARY KEY,
     nombre VARCHAR(255) NOT NULL,
     contrasena TEXT NOT NULL,
-    foto_perfil TEXT
+    foto_perfil TEXT DEFAULT 'https://drive.google.com/file/d/1wtYoNi07OCQ9TDKH4yaFXJx7C6z0vzh7/view?usp=sharing',
+    FOREIGN KEY (foto_perfil) REFERENCES imagen_perfil(url) ON DELETE SET DEFAULT
 );
 
 -- Tabla de IMAGENES (portadas de libros, fotos de usuarios)
