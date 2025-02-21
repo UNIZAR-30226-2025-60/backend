@@ -31,30 +31,32 @@ const { FOREIGNKEYS } = require("sequelize/lib/query-types");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.set("trust proxy", 1);// Para que las cookies funcionen en producción(render)
+
 // Configuración de CORS
 const allowedOrigins = [
   process.env.FRONTEND_URL || "http://localhost:8081",
   process.env.RENDER_FRONTEND_URL || "https://booklyweb-469w.onrender.com"
 ];
 
-app.use(
-  cors({
-    origin: allowedOrigins,
-    credentials: true,
-  })
-);
 // app.use(
 //   cors({
-//     origin: function (origin, callback) {
-//       if (!origin || allowedOrigins.includes(origin)) {
-//         callback(null, true);
-//       } else {
-//         callback(new Error("Not allowed by CORS"));
-//       }
-//     },
-//     credentials: true, // Permite cookies y sesiones en frontend
+//     origin: allowedOrigins,
+//     credentials: true,
 //   })
 // );
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true, 
+  })
+);
 
 // Middleware para procesar JSON
 app.use(express.json());
