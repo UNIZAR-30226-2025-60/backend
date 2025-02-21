@@ -3,14 +3,11 @@ const passport = require("passport");
 
 const router = express.Router();
 
-// Determina si estamos en localhost o en producción
-const isLocal = process.env.NODE_ENV === "development";
-
-// Usa el FRONTEND_URL correcto según el entorno
+const isLocal = process.env.NODE_ENV !== "production";
 const FRONTEND_URL = isLocal
-  ? process.env.RENDER_FRONTEND_URL || "https://booklyweb-469w.onrender.com"
-  : process.env.FRONTEND_URL || "http://localhost:8081";
-  
+  ? "http://localhost:8081"
+  : "https://booklyweb-469w.onrender.com";
+
 // Ruta para iniciar sesión con Google
 router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 
