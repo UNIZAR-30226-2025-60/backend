@@ -12,6 +12,7 @@ const { Tema } = require("./models/Tema");
 const { Opinion } = require("./models/Opiniones");
 const { Lista } = require("./models/Listas");
 const { Fragmento } = require("./models/Fragmento");
+const { Leido } = require("./models/Leido");
 
 
 // Importar rutas
@@ -23,6 +24,7 @@ const apiForoRoutes = require('./routes/APIforo');
 const opinionesRoutes = require("./routes/opiniones");  
 const listasRoutes = require("./routes/listas");
 const fragmentosRoutes = require("./routes/fragmentos");
+const estadisticasRoutes = require("./routes/estadisticas");
 
 const { FOREIGNKEYS } = require("sequelize/lib/query-types");
 
@@ -134,6 +136,7 @@ app.use("/api", apiForoRoutes);
 app.use("/api/opiniones", opinionesRoutes); 
 app.use("/api/listas", listasRoutes);
 app.use("/api/fragmentos", fragmentosRoutes);
+app.use("/api/estadisticas", estadisticasRoutes);
 
 // Iniciar servidor
 app.listen(PORT, () => {
