@@ -158,6 +158,7 @@ app.use("/auth", authRoutes);
 app.use("/api", userRoutes);
 app.use("/api/libros", librosRoutes);
 app.use("/api/usuarios", usuariosRoutes);
+app.use("/api", usuariosRoutes);
 app.use("/api", apiForoRoutes);
 app.use("/api/opiniones", opinionesRoutes); 
 app.use("/api/listas", listasRoutes);

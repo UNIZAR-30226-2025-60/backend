@@ -100,4 +100,85 @@ router.post('/login', async (req, res) => {
     }
 });
 
+
+
+
+
+
+
+
+
+
+
+
+
+//Ruta para actualizar el proceso de lectura de un libro por un usuario
+router.post('/guardar-progreso', async (req, res) => {
+    const { correo, enlace, pagina } = req.body;
+    try {
+      await pool.query(
+        `INSERT INTO en_proceso (usuario_id, libro_id, pagina)
+         VALUES ($1, $2, $3)
+         ON CONFLICT (usuario_id, libro_id) DO UPDATE SET pagina = $3`,
+        [correo, enlace, pagina]
+      );
+      res.status(200).json({ mensaje: "Progreso guardado" });
+    } catch (error) {
+      res.status(500).json({ error: "Error al guardar progreso" });
+    }
+  });
+
+
+//Ruta para cargar el proceso de lectura de un libro por un usuario
+  router.get('/cargar-progreso/:correo/:enlace', async (req, res) => {
+    const { correo, enlace } = req.params;
+    try {
+      const result = await pool.query(
+        'SELECT pagina FROM en_proceso WHERE usuario_id = $1 AND libro_id = $2',
+        [correo, enlace]
+      );
+      const pagina = result.rows[0] ? result.rows[0].pagina : 1;
+      res.json({ pagina });
+    } catch (error) {
+      res.status(500).json({ error: "Error al cargar progreso" });
+    }
+  });
+  
+
+
+//Ruta para guardar un fragmento destacado por un usuario
+  router.post('/guardar-fragmento', async (req, res) => {
+    const { correo, enlace, pagina, fragmento } = req.body;
+    try {
+      await pool.query(
+        `INSERT INTO destacar_fragmento (enlace, correo, pagina, fragmento)
+         VALUES ($1, $2, $3, $4)`,
+        [enlace, correo, pagina, fragmento]
+      );
+      res.status(201).json({ mensaje: "Fragmento guardado" });
+    } catch (error) {
+      res.status(500).json({ error: "Error al guardar fragmento" });
+    }
+  });
+  
+
+
+  router.get('/obtener-pdf/:id', async (req, res) => {
+    const fileId = req.params.id;
+    const url = `https://drive.google.com/uc?id=${fileId}&export=download`;
+  
+    try {
+      const response = await axios.get(url, { responseType: 'arraybuffer' });
+  
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Access-Control-Allow-Origin', '*'); // Permitir acceso desde cualquier origen
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+  
+      res.send(response.data);
+    } catch (error) {
+      console.error("Error al obtener PDF:", error);
+      res.status(500).send("Error al obtener el PDF");
+    }
+  });
+ 
 module.exports = router;

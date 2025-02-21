@@ -78,7 +78,8 @@ CREATE TABLE destacar_fragmento (
     enlace VARCHAR(255) NOT NULL,
     correo VARCHAR(255) NOT NULL,
     pagina INTEGER NOT NULL,
-    PRIMARY KEY (enlace, correo, pagina),
+    fragmento TEXT NOT NULL,
+    PRIMARY KEY (enlace, correo, pagina, fragmento),
     FOREIGN KEY (enlace) REFERENCES libro(enlace) ON DELETE CASCADE,
     FOREIGN KEY (correo) REFERENCES usuario(correo) ON DELETE CASCADE
 );
