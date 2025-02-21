@@ -3,6 +3,12 @@ const passport = require("passport");
 
 const router = express.Router();
 
+const FRONTEND_URL =
+  window.location.hostname === "localhost"
+    ? process.env.FRONTEND_URL || "http://localhost:8081"
+    : process.env.RENDER_FRONTEND_URL || "https://booklyweb-469w.onrender.com";
+
+
 // Ruta para iniciar sesión con Google
 router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 
@@ -13,7 +19,7 @@ router.get(
   (req, res) => {
     console.log("Usuario autenticado:", req.user); // Verificar usuario autenticado
     console.log("Sesión actual:", req.session); // Imprimir sesión
-    res.redirect("http://localhost:8081/inicio"); // Redirigir al frontend
+    res.redirect(`${FRONTEND_URL}/inicio`); //Redirigir de manera dinámica
   }
 );
 
