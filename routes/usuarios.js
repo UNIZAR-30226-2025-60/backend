@@ -1,6 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcrypt');  // Importa bcrypt para la encriptación
 const router = express.Router();
+const axios = require('axios');
 const { pool } = require('../db/db');
 
 const { registrarUser } = require('../models/User');
@@ -167,17 +168,22 @@ router.post('/guardar-progreso', async (req, res) => {
     const fileId = req.params.id;
     const url = `https://drive.google.com/uc?id=${fileId}&export=download`;
   
+    console.log("🔹 Intentando obtener PDF con ID:", fileId);
+    console.log("🔹 URL generada:", url);
+  
     try {
       const response = await axios.get(url, { responseType: 'arraybuffer' });
   
+      console.log("✅ PDF obtenido con éxito desde Google Drive");
+  
       res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Access-Control-Allow-Origin', '*'); // Permitir acceso desde cualquier origen
+      res.setHeader('Access-Control-Allow-Origin', '*'); 
       res.setHeader('Access-Control-Allow-Credentials', 'true');
   
       res.send(response.data);
     } catch (error) {
-      console.error("Error al obtener PDF:", error);
-      res.status(500).send("Error al obtener el PDF");
+      console.error("❌ Error al obtener PDF:", error.message);
+      res.status(500).send(`Error al obtener el PDF: ${error.message}`);
     }
   });
  
