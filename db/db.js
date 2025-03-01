@@ -1,6 +1,10 @@
 const { Sequelize } = require('sequelize');
 const { Pool } = require('pg');
 require('dotenv').config();
+// SI DESDE BACKEND
+// require('dotenv').config();
+// SI DESDE FRONTEND
+require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
 
 const DATABASE_URL = process.env.DATABASE_URL;
 

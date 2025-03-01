@@ -1,7 +1,7 @@
 // routes/libros.js
 const express = require('express');
 const router = express.Router();
-const { Libro, obtenerLibrosPorTematica , obtenerLibrosEnProcesoPorUsuario } = require('../models/Libro');  // Importar el modelo Libro
+const { Libro, obtenerLibrosPorTematica, obtenerLibrosPorTematicaYTitulo, obtenerLibrosEnProcesoPorUsuario } = require('../models/Libro');  // Importar el modelo Libro
 const { Tema } = require('../models/Tema');  // Importar el modelo Tema
 const { Op } = require('sequelize');
 const { User } = require('../models/User');
@@ -92,6 +92,17 @@ router.get('/tematica/:tematica', async (req, res) => {
         res.json(libros);
     } catch (error) {
         res.status(500).send('Error al obtener libros por temática');
+    }
+});
+
+// Ruta para obtener libros por temática y tirulo en buscador
+router.get('/tematicaTitulo/:tematica/:titulo', async (req, res) => {
+    const { tematica, titulo } = req.params;
+    try {
+        const libros = await obtenerLibrosPorTematicaYTitulo(tematica, titulo);
+        res.json(libros);
+    } catch (error) {
+        res.status(500).send('Error al obtener libros por temática y nombre');
     }
 });
 
