@@ -98,6 +98,24 @@ router.get('/:enlace', async (req, res) => {
 router.post('/', async (req, res) => {
     try {
         const { usuario_id, libro_id, titulo_resena, mensaje, valor } = req.body;
+
+        if (!usuario_id || !libro_id || !titulo_resena || !mensaje || valor === undefined) {
+            return res.status(400).json({ error: 'Faltan datos requeridos' });
+        }
+
+        // Verificar si el libro existe
+        const libro = await Libro.findOne({ where: { enlace: libro_id } });
+        if (!libro) {
+            return res.status(400).json({ error: "El libro no existe." });
+        }
+          
+        console.log('Datos recibidos para agregar opinión:', {
+            usuario_id,
+            libro_id,
+            titulo_resena,
+            mensaje,
+            valor
+        });
         const nuevaOpinion = await agregarOpinion({ usuario_id, libro_id, titulo_resena, mensaje, valor });
         res.status(201).json(nuevaOpinion);
     } catch (error) {
