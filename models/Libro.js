@@ -72,6 +72,29 @@ const obtenerLibrosPorTematica = async (tematica) => {
     }
 };
 
+// Función para obtener libros por temática y titulo para el buscador
+const obtenerLibrosPorTematicaYTitulo = async (tematica, titulo) => {
+    try {
+        const libros = await sequelize.query(
+            `SELECT l.* 
+            FROM libro l
+            JOIN tema_asociado t ON l.enlace = t.enlace
+            WHERE t.tematica = :tematica
+            AND LOWER(l.nombre) LIKE LOWER(:titulo)`,
+            {
+                replacements: { 
+                    tematica, 
+                    titulo: `%${titulo}%` // Se agrega el comodín % para hacer la búsqueda parcial
+                },
+                type: sequelize.QueryTypes.SELECT
+            }
+        );
+        return libros;
+    } catch (error) {
+        throw new Error('Error al obtener libros por temática y nombre');
+    }
+};
+
 
 const obtenerLibrosEnProcesoPorUsuario = async (correo) => {
     try {
@@ -89,4 +112,4 @@ const obtenerLibrosEnProcesoPorUsuario = async (correo) => {
   };
 
   
-module.exports = { Libro, obtenerLibrosPorTematica , obtenerLibrosEnProcesoPorUsuario};
+module.exports = { Libro, obtenerLibrosPorTematica, obtenerLibrosPorTematicaYTitulo, obtenerLibrosEnProcesoPorUsuario};
