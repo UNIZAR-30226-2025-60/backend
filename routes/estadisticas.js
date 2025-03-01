@@ -1,7 +1,7 @@
 // routes/estadisticas.js
 const express = require('express');
 const router = express.Router();
-const { obtenerEstadisticasLibrosLeidosEnMes,  obtenerEstadisticasLibrosLeidosEnAños, obtenerTop3UsuariosDelMes, obtenerTop15LibrosDelMesYAnio, obtenerTop15LibrosDelAnio, obtenerTiempoTotalLeidoEnMes} = require('../models/Leido');  // IMPORTAR LA FUNCIÓN
+const { obtenerEstadisticasLibrosLeidosEnMes,  obtenerTop3UsuariosDelAnio, obtenerEstadisticasLibrosLeidosEnAños, obtenerEstadisticasGeneralesPorUsuario, obtenerTop3UsuariosDelMes, obtenerTop5LibrosDelMesYAnio, obtenerTop5LibrosDelAnio, obtenerLibrosRecomendadosSegunTematicas, obtenerTiempoTotalLeidoEnMes} = require('../models/Leido');  // IMPORTAR LA FUNCIÓN
 const { User } = require('../models/User');  
 
 // RUTA PARA OBTENER LOS 3 USUARIOS QUE MÁS HAN LEÍDO EL MES ACTUAL
@@ -23,50 +23,115 @@ router.get('/top3', async (req, res) => {
     }
 });
 
-// RUTA PARA OBTENER LOS 15 LIBROS QUE MÁS SE HAN LEÍDO DADO UN AÑO
-// Probar: 
-//   GET http://localhost:3000/api/estadisticas/top15libros/:year
-router.get('/top15libros/:year', async (req, res) => {
-    const { year } = req.params;
-    
+// RUTA PARA OBTENER LOS 3 USUARIOS QUE MÁS HAN LEÍDO EN EL AÑO ACTUAL
+// Probar:
+//   GET http://localhost:3000/api/estadisticas/top3anuales
+router.get('/top3anuales', async (req, res) => {
     try {
-        console.log(`Solicitando los 15 libros más leídos para el año: ${year}`);
-        
-        const librosTop15Anio = await obtenerTop15LibrosDelAnio(year);
-        
-        if (librosTop15Anio.length === 0) {
-            return res.status(404).send('No se encontraron libros leídos en este año.');
+        const currentYear = new Date().getFullYear();
+
+        const usuariosTop3Anuales = await obtenerTop3UsuariosDelAnio(currentYear);
+
+        if (usuariosTop3Anuales.length === 0) {
+            return res.status(404).send('No se encontraron usuarios que hayan leído libros este año.');
         }
 
-        res.json(librosTop15Anio);
+        res.json(usuariosTop3Anuales);
 
     } catch (error) {
-        console.error('Error al obtener los 15 libros más leídos del año:', error);
-        res.status(500).send('Error al obtener los 15 libros más leídos del año');
+        console.error('Error al obtener los 3 usuarios que más han leído en el año:', error);
+        res.status(500).send('Error al obtener los 3 usuarios que más han leído en el año');
     }
 });
 
 
-// RUTA PARA OBTENER LOS 15 LIBROS QUE MÁS SE HAN LEÍDO DADO UN MES Y UN AÑO
+// RUTA PARA OBTENER LOS 5 LIBROS QUE MÁS SE HAN LEÍDO DADO UN AÑO
+// Probar: 
+//   GET http://localhost:3000/api/estadisticas/top15libros/:year
+router.get('/top5libros/:year', async (req, res) => {
+    const { year } = req.params;
+    
+    try {
+        console.log(`Solicitando los 5 libros más leídos para el año: ${year}`);
+        
+        const librosTop5Anio = await obtenerTop5LibrosDelAnio(year);
+        
+        if (librosTop5Anio.length === 0) {
+            return res.status(404).send('No se encontraron libros leídos en este año.');
+        }
+
+        res.json(librosTop5Anio);
+
+    } catch (error) {
+        console.error('Error al obtener los 5 libros más leídos del año:', error);
+        res.status(500).send('Error al obtener los 5 libros más leídos del año');
+    }
+});
+
+
+// RUTA PARA OBTENER LOS 5 LIBROS QUE MÁS SE HAN LEÍDO DADO UN MES Y UN AÑO
 // Probar: 
 //   GET http://localhost:3000/api/estadisticas/top15libros/:month/:year
-router.get('/top15libros/:month/:year', async (req, res) => {
+router.get('/top5libros/:month/:year', async (req, res) => {
     const { month, year } = req.params;
     
     try {
-        console.log(`Solicitando los 15 libros más leídos para el mes: ${month} y el año: ${year}`);
+        console.log(`Solicitando los 5 libros más leídos para el mes: ${month} y el año: ${year}`);
         
-        const librosTop15 = await obtenerTop15LibrosDelMesYAnio(month, year);
+        const librosTop5 = await obtenerTop5LibrosDelMesYAnio(month, year);
         
-        if (librosTop15.length === 0) {
+        if (librosTop5.length === 0) {
             return res.status(404).send('No se encontraron libros leídos en este mes y año.');
         }
 
-        res.json(librosTop15);
+        res.json(librosTop5);
 
     } catch (error) {
-        console.error('Error al obtener los 15 libros más leídos del mes y año:', error);
-        res.status(500).send('Error al obtener los 15 libros más leídos del mes y año');
+        console.error('Error al obtener los 5 libros más leídos del mes y año:', error);
+        res.status(500).send('Error al obtener los 5 libros más leídos del mes y año');
+    }
+});
+
+// RUTA PARA OBTENER LOS DATOS GENERALES DE UN USUARIO
+// Probar:
+//   GET http://localhost:3000/api/estadisticas/generales/:correo
+router.get('/generales/:correo', async (req, res) => {
+    const { correo } = req.params; // Obtenemos el correo del usuario desde los parámetros de la ruta
+
+    try {
+        const estadisticasGenerales = await obtenerEstadisticasGeneralesPorUsuario(correo);
+
+        if (!estadisticasGenerales) {
+            return res.status(404).send('No se encontraron estadísticas para este usuario.');
+        }
+
+        res.json(estadisticasGenerales);
+
+    } catch (error) {
+        console.error('Error al obtener las estadísticas generales del usuario:', error);
+        res.status(500).send('Error al obtener las estadísticas generales del usuario');
+    }
+});
+
+
+// RUTA PARA OBTENER LOS LIBROS RECOMENDADOS SEGÚN LAS TEMÁTICAS MÁS LEÍDAS POR EL USUARIO
+// Probar: 
+//   GET http://localhost:3000/api/estadisticas/librosrecomendados/:correo
+router.get('/librosrecomendados/:correo', async (req, res) => {
+    const { correo } = req.params;
+
+    try {
+        const librosRecomendados = await obtenerLibrosRecomendadosSegunTematicas(correo);
+
+        if (librosRecomendados.length === 0) {
+            return res.status(404).send('No se encontraron libros recomendados.');
+        }
+
+        res.json(librosRecomendados);
+
+    } catch (error) {
+        console.error('Error al obtener los libros recomendados:', error);
+        res.status(500).send('Error al obtener los libros recomendados');
     }
 });
 
@@ -86,7 +151,6 @@ router.get('/:correo', async (req, res) => {
             return res.status(404).send('Usuario no encontrado');
         }
 
-        // Obtener el mes y el año actuales
         const fechaActual = new Date();
         const year = fechaActual.getFullYear(); 
         const month = fechaActual.getMonth() + 1;  
@@ -111,6 +175,44 @@ router.get('/:correo', async (req, res) => {
         res.status(500).send('Error al obtener estadísticas de libros leídos en el mes');
     }
 });
+
+// RUTA PARA OBTENER DE UN USUARIO, DADO UN USUARIO Y UN AÑO:
+//    - libros_completados
+//    - libros_en_progreso (falta darle una vuelta porque no sé cómo se guarda el inicio de cuando empieza a leer)
+//    - tematicasMasLeidas (las 3 más leídas solo)
+//    - librosMasValorados (los 5 libros valorados por un usuario en orden de mayor a menor puntuación media)
+//    - librosLeidos (enlace, nombre, autor, fech_publ, resumen)
+// Probar: 
+//   GET http://localhost:3000/api/estadisticas/:usuario/:year
+router.get('/:correo/:year', async (req, res) => {
+    const { correo, year } = req.params;
+    
+    try {
+        console.log('Solicitando estadísticas para el usuario:', correo, 'y año:', year);
+        
+        const usuarioExistente = await User.findOne({ where: { correo } });
+        if (!usuarioExistente) {
+            console.log('Usuario no encontrado');
+            return res.status(404).send('Usuario no encontrado');
+        }
+        console.log('Usuario encontrado:', usuarioExistente);
+
+        const estadisticas = await obtenerEstadisticasLibrosLeidosEnAños(correo, year);
+        
+        if (estadisticas.mensaje) {
+            console.log('Mensaje:', estadisticas.mensaje);
+            return res.status(404).send(estadisticas.mensaje);
+        }
+
+        console.log('Estadísticas obtenidas:', estadisticas);
+        res.json(estadisticas);
+
+    } catch (error) {
+        console.error('Error al obtener estadísticas:', error);
+        res.status(500).send('Error al obtener estadísticas de libros leídos en el año');
+    }
+});
+
 
 // ESTO SERÍA SI AÑADIESEMOS LAS HORAS PARA UN USUARIO EN CONCRETO, EN UN MES, PORQUE SINO DEVUELVE LAS HORAS DEL LIBRO?
 // router.get('/:correo/horasmes', async (req, res) => {
@@ -175,48 +277,5 @@ router.get('/:correo', async (req, res) => {
 //         res.status(500).send('Error al obtener estadísticas de tiempo total leído en el año');
 //     }
 // });
-
-
-
-// RUTA PARA OBTENER DE UN USUARIO, DADO UN USUARIO Y UN AÑO:
-//    - libros_completados
-//    - libros_en_progreso (falta darle una vuelta porque no sé cómo se guarda el inicio de cuando empieza a leer)
-//    - tematicasMasLeidas (las 3 más leídas solo)
-//    - librosMasValorados (los 5 libros valorados por un usuario en orden de mayor a menor puntuación media)
-//    - librosLeidos (enlace, nombre, autor, fech_publ, resumen)
-// Probar: 
-//   GET http://localhost:3000/api/estadisticas/:usuario/:year
-router.get('/:correo/:year', async (req, res) => {
-    const { correo, year } = req.params;
-    
-    try {
-        console.log('Solicitando estadísticas para el usuario:', correo, 'y año:', year);
-        
-        const usuarioExistente = await User.findOne({ where: { correo } });
-        if (!usuarioExistente) {
-            console.log('Usuario no encontrado');
-            return res.status(404).send('Usuario no encontrado');
-        }
-        console.log('Usuario encontrado:', usuarioExistente);
-
-        const estadisticas = await obtenerEstadisticasLibrosLeidosEnAños(correo, year);
-        
-        if (estadisticas.mensaje) {
-            console.log('Mensaje:', estadisticas.mensaje);
-            return res.status(404).send(estadisticas.mensaje);
-        }
-
-        console.log('Estadísticas obtenidas:', estadisticas);
-        res.json(estadisticas);
-
-    } catch (error) {
-        console.error('Error al obtener estadísticas:', error);
-        res.status(500).send('Error al obtener estadísticas de libros leídos en el año');
-    }
-});
-
-
-
-
 
 module.exports = router;

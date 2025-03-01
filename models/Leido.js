@@ -52,63 +52,38 @@ const obtenerLibrosLeidosPorUsuario = async (correo) => {
     }
 };
 
-// Modificamos la función para que reciba el mes y el año
 const obtenerEstadisticasLibrosLeidosEnMes = async (correo, year, month) => {
     try {
-        // Definir el primer y último día del mes recibido
-        const fechaInicioMes = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0)); // El mes es 0-indexado, por eso restamos 1
-        const fechaFinMes = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999)); // Último día del mes
+        const fechaInicioMes = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0)); 
+        const fechaFinMes = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999)); 
 
         console.log('Fecha inicio mes:', fechaInicioMes);
         console.log('Fecha fin mes:', fechaFinMes);
 
         const query = `
-            SELECT l.*, t.tematica, le.fecha_fin_lectura
+            SELECT l.*, le.fecha_fin_lectura
             FROM "leidos" AS le
             JOIN "libro" AS l ON le."libro_id" = l."enlace"
-            JOIN "tema_asociado" AS ta ON l."enlace" = ta."enlace"
-            JOIN "tema" AS t ON ta."tematica" = t."tematica"
             WHERE le."usuario_id" = :correo
             AND le."fecha_fin_lectura" BETWEEN :fechaInicio AND :fechaFin
         `;
 
         const librosLeidos = await sequelize.query(query, {
-            replacements: { correo, fechaInicio: fechaInicioMes, fechaFin: fechaFinMes },
+            replacements: { correo, fechaInicio: fechaInicioMes.toISOString(), fechaFin: fechaFinMes.toISOString() },
             type: sequelize.QueryTypes.SELECT
         });
 
         console.log('Libros Leídos:', librosLeidos); 
 
         if (librosLeidos.length === 0) {
-            return { mensaje: "No se encontraron libros leídos en este mes.", totalLibrosLeidos: 0, tematicas: {}, librosLeidos: [] };
+            return { mensaje: "No se encontraron libros leídos en este mes.", totalLibrosLeidos: 0, librosLeidos: [] };
         }
 
-        const tematicas = {};
-        const librosUnicos = [];
-
-        librosLeidos.forEach(libro => {
-            const tematica = libro.tematica;
-            
-            if (!librosUnicos.some(l => l.enlace === libro.enlace)) {
-                librosUnicos.push(libro);
-            }
-
-            if (tematica) {  
-                if (tematicas[tematica]) {
-                    tematicas[tematica] += 1;
-                } else {
-                    tematicas[tematica] = 1;
-                }
-            }
-        });
-
-        console.log('Temáticas:', tematicas); 
-        console.log('Libros Únicos:', librosUnicos); 
+        const totalLibrosLeidos = librosLeidos.length;
 
         return {
-            totalLibrosLeidos: librosUnicos.length, 
-            tematicas,
-            librosLeidos: librosUnicos 
+            totalLibrosLeidos,
+            librosLeidos       
         };
 
     } catch (error) {
@@ -139,59 +114,6 @@ const obtenerEstadisticasLibrosLeidosEnAños = async (correo, year) => {
         const libros_completados = resultLibrosCompletados[0]?.libros_completados || 0;
         console.log('Libros completados:', libros_completados);
 
-        const queryLibrosEnProgreso = `
-            SELECT COUNT(*) AS libros_en_progreso
-            FROM "en_proceso" AS ep
-            WHERE ep."usuario_id" = :correo
-            AND EXTRACT(YEAR FROM CURRENT_DATE) = :year
-        `;
-        
-        const resultLibrosEnProgreso = await sequelize.query(queryLibrosEnProgreso, {
-            replacements: { correo, year },
-            type: sequelize.QueryTypes.SELECT
-        });
-
-        const libros_en_progreso = resultLibrosEnProgreso[0]?.libros_en_progreso || 0;
-        console.log('Libros en progreso:', libros_en_progreso);
-
-        const queryTematicasMasLeidas = `
-            SELECT t.tematica, COUNT(*) AS cantidad
-            FROM "leidos" AS le
-            JOIN "libro" AS l ON le."libro_id" = l."enlace"
-            JOIN "tema_asociado" AS ta ON l."enlace" = ta."enlace"
-            JOIN "tema" AS t ON ta."tematica" = t."tematica"
-            WHERE le."usuario_id" = :correo
-            AND EXTRACT(YEAR FROM le."fecha_fin_lectura") = :year
-            GROUP BY t.tematica
-            ORDER BY cantidad DESC
-            LIMIT 3
-        `;
-        
-        const tematicasMasLeidas = await sequelize.query(queryTematicasMasLeidas, {
-            replacements: { correo, year },
-            type: sequelize.QueryTypes.SELECT
-        });
-        console.log('Temáticas más leídas:', tematicasMasLeidas);
-
-        const queryLibrosMasValorados = `
-            SELECT l.*, AVG(o.valor) AS puntuacion_media
-            FROM "opinion" AS o
-            JOIN "libro" AS l ON o."libro_id" = l."enlace"
-            JOIN "tema_asociado" AS ta ON l."enlace" = ta."enlace"
-            JOIN "tema" AS t ON ta."tematica" = t."tematica"
-            WHERE o."usuario_id" = :correo
-            AND EXTRACT(YEAR FROM o."fecha") = :year
-            GROUP BY l."enlace", t.tematica
-            ORDER BY AVG(o.valor) DESC
-            LIMIT 5
-        `;
-        
-        const librosMasValorados = await sequelize.query(queryLibrosMasValorados, {
-            replacements: { correo, year },
-            type: sequelize.QueryTypes.SELECT
-        });
-        console.log('Libros más valorados:', librosMasValorados);
-
         const queryLibrosLeidos = `
             SELECT l.*
             FROM "leidos" AS le
@@ -208,9 +130,6 @@ const obtenerEstadisticasLibrosLeidosEnAños = async (correo, year) => {
 
         return {
             libros_completados,
-            libros_en_progreso,
-            tematicasMasLeidas: tematicasMasLeidas || [],
-            librosMasValorados: librosMasValorados || [],
             librosLeidos: librosLeidos || []  
         };
 
@@ -219,6 +138,76 @@ const obtenerEstadisticasLibrosLeidosEnAños = async (correo, year) => {
         throw new Error('Error al obtener las estadísticas de libros leídos en el año');
     }
 };
+
+const obtenerEstadisticasGeneralesPorUsuario = async (correo) => {
+    try {
+        const queryLibrosTotalesLeidos = `
+            SELECT COUNT(*) AS total_libros_leidos
+            FROM "leidos" AS le
+            WHERE le."usuario_id" = :correo;
+        `;
+        const resultLibrosTotales = await sequelize.query(queryLibrosTotalesLeidos, {
+            replacements: { correo },
+            type: sequelize.QueryTypes.SELECT
+        });
+
+        const totalLibrosLeidos = resultLibrosTotales[0]?.total_libros_leidos || 0;
+
+        const queryTop3Tematicas = `
+            SELECT t.tematica, COUNT(*) AS cantidad
+            FROM "leidos" AS le
+            JOIN "libro" AS l ON le."libro_id" = l."enlace"
+            JOIN "tema_asociado" AS ta ON l."enlace" = ta."enlace"
+            JOIN "tema" AS t ON ta."tematica" = t."tematica"
+            WHERE le."usuario_id" = :correo
+            GROUP BY t.tematica
+            ORDER BY cantidad DESC
+            LIMIT 3;
+        `;
+        const tematicasMasLeidas = await sequelize.query(queryTop3Tematicas, {
+            replacements: { correo },
+            type: sequelize.QueryTypes.SELECT
+        });
+
+        const queryTop5LibrosValorados = `
+            SELECT l.*, AVG(o.valor) AS puntuacion_media
+            FROM "opinion" AS o
+            JOIN "libro" AS l ON o."libro_id" = l."enlace"
+            WHERE o."usuario_id" = :correo
+            GROUP BY l."enlace"
+            ORDER BY AVG(o.valor) DESC  -- Ordena por el cálculo de la puntuación media
+            LIMIT 5;
+        `;
+
+        const librosMasValorados = await sequelize.query(queryTop5LibrosValorados, {
+            replacements: { correo },
+            type: sequelize.QueryTypes.SELECT
+        });
+
+        const queryLibrosEnProgreso = `
+            SELECT COUNT(*) AS libros_en_progreso
+            FROM "en_proceso" AS ep
+            WHERE ep."usuario_id" = :correo;
+        `;
+        const resultLibrosEnProgreso = await sequelize.query(queryLibrosEnProgreso, {
+            replacements: { correo },
+            type: sequelize.QueryTypes.SELECT
+        });
+
+        const librosEnProgreso = resultLibrosEnProgreso[0]?.libros_en_progreso || 0;
+
+        return {
+            totalLibrosLeidos,
+            tematicasMasLeidas,
+            librosMasValorados,
+            librosEnProgreso
+        };
+    } catch (error) {
+        console.error('Error al obtener las estadísticas generales del usuario:', error);
+        throw new Error('Error al obtener las estadísticas generales del usuario');
+    }
+};
+
 
 const obtenerTop3UsuariosDelMes = async () => {
     try {
@@ -245,7 +234,33 @@ const obtenerTop3UsuariosDelMes = async () => {
     }
 };
 
-const obtenerTop15LibrosDelMesYAnio = async (month, year) => {
+const obtenerTop3UsuariosDelAnio = async (year) => {
+    try {
+        const queryTop3UsuariosAnio = `
+            SELECT le."usuario_id", COUNT(*) AS libros_leidos
+            FROM "leidos" AS le
+            WHERE EXTRACT(YEAR FROM le."fecha_fin_lectura") = :year
+            GROUP BY le."usuario_id"
+            ORDER BY libros_leidos DESC
+            LIMIT 3;
+        `;
+
+        const usuariosTop3Anio = await sequelize.query(queryTop3UsuariosAnio, {
+            replacements: { year },
+            type: sequelize.QueryTypes.SELECT
+        });
+
+        console.log('Top 3 usuarios que más han leído este año:', usuariosTop3Anio);
+
+        return usuariosTop3Anio;
+
+    } catch (error) {
+        console.error('Error al obtener los 3 usuarios que más han leído del año:', error);
+        throw new Error('Error al obtener los 3 usuarios que más han leído del año');
+    }
+};
+
+const obtenerTop5LibrosDelMesYAnio = async (month, year) => {
     try {
         const queryTop15Libros = `
             SELECT l.*, COUNT(*) AS veces_leido
@@ -255,24 +270,24 @@ const obtenerTop15LibrosDelMesYAnio = async (month, year) => {
             AND EXTRACT(YEAR FROM le."fecha_fin_lectura") = :year
             GROUP BY l."enlace"
             ORDER BY veces_leido DESC
-            LIMIT 15;
+            LIMIT 5;
         `;
         
         const librosTop15 = await sequelize.query(queryTop15Libros, {
             replacements: { month, year },
             type: sequelize.QueryTypes.SELECT
         });
-        console.log('Top 15 libros más leídos:', librosTop15);
+        console.log('Top 5 libros más leídos:', librosTop15);
 
         return librosTop15;
 
     } catch (error) {
-        console.error('Error al obtener los 15 libros más leídos del mes y año:', error);
-        throw new Error('Error al obtener los 15 libros más leídos del mes y año');
+        console.error('Error al obtener los 5 libros más leídos del mes y año:', error);
+        throw new Error('Error al obtener los 5 libros más leídos del mes y año');
     }
 };
 
-const obtenerTop15LibrosDelAnio = async (year) => {
+const obtenerTop5LibrosDelAnio = async (year) => {
     try {
         const queryTop15LibrosAnio = `
             SELECT l.*, COUNT(*) AS veces_leido
@@ -281,22 +296,71 @@ const obtenerTop15LibrosDelAnio = async (year) => {
             WHERE EXTRACT(YEAR FROM le."fecha_fin_lectura") = :year
             GROUP BY l."enlace"
             ORDER BY veces_leido DESC
-            LIMIT 15;
+            LIMIT 5;
         `;
         
         const librosTop15Anio = await sequelize.query(queryTop15LibrosAnio, {
             replacements: { year },
             type: sequelize.QueryTypes.SELECT
         });
-        console.log('Top 15 libros más leídos del año:', librosTop15Anio);
+        console.log('Top 5 libros más leídos del año:', librosTop15Anio);
 
         return librosTop15Anio;
 
     } catch (error) {
-        console.error('Error al obtener los 15 libros más leídos del año:', error);
-        throw new Error('Error al obtener los 15 libros más leídos del año');
+        console.error('Error al obtener los 5 libros más leídos del año:', error);
+        throw new Error('Error al obtener los 5 libros más leídos del año');
     }
 };
+
+const obtenerLibrosRecomendadosSegunTematicas = async (correo) => {
+    try {
+        const queryTematicas = `
+            WITH tematicas_mas_leidas AS (
+                SELECT t.tematica
+                FROM "leidos" AS le
+                JOIN "libro" AS l ON le."libro_id" = l."enlace"
+                JOIN "tema_asociado" AS ta ON l."enlace" = ta."enlace"
+                JOIN "tema" AS t ON ta."tematica" = t."tematica"
+                WHERE le."usuario_id" = :correo
+                GROUP BY t.tematica
+                ORDER BY COUNT(*) DESC
+                LIMIT 3
+            )
+            SELECT l.*, AVG(o.valor) AS puntuacion_media, COUNT(DISTINCT t.tematica) AS coincidencias_tematicas
+            FROM "libro" AS l
+            JOIN "tema_asociado" AS ta ON l."enlace" = ta."enlace"
+            JOIN "tema" AS t ON ta."tematica" = t."tematica"
+            LEFT JOIN "opinion" AS o ON o."libro_id" = l."enlace"
+            WHERE t.tematica IN (SELECT tematica FROM tematicas_mas_leidas)
+            AND l."enlace" NOT IN (
+                SELECT "libro_id"
+                FROM "leidos"
+                WHERE "usuario_id" = :correo
+                UNION
+                SELECT "libro_id"
+                FROM "en_proceso"
+                WHERE "usuario_id" = :correo
+            )
+            GROUP BY l."enlace"
+            ORDER BY coincidencias_tematicas DESC, AVG(o.valor) DESC
+            LIMIT 10;
+        `;
+        
+        const librosRecomendados = await sequelize.query(queryTematicas, {
+            replacements: { correo },
+            type: sequelize.QueryTypes.SELECT
+        });
+
+        console.log('Libros recomendados:', librosRecomendados);
+
+        return librosRecomendados;
+    } catch (error) {
+        console.error('Error al obtener libros recomendados:', error);
+        throw new Error('Error al obtener libros recomendados');
+    }
+};
+
 
 // ESTO ES EL TIEMPO COGIDO DE UN LIBRO, NO TIENE QUE VER CON EL TIEMPO INVERTIDO DE UN USUARIO
 const obtenerTiempoTotalLeidoEnMes = async (correo, year, month) => {
@@ -329,4 +393,4 @@ const obtenerTiempoTotalLeidoEnMes = async (correo, year, month) => {
 };
 
 
-module.exports = { Leido, obtenerLibrosLeidosPorUsuario, obtenerEstadisticasLibrosLeidosEnMes, obtenerEstadisticasLibrosLeidosEnAños, obtenerTop3UsuariosDelMes, obtenerTop15LibrosDelMesYAnio, obtenerTop15LibrosDelAnio, obtenerTiempoTotalLeidoEnMes };
+module.exports = { Leido, obtenerLibrosLeidosPorUsuario, obtenerEstadisticasLibrosLeidosEnMes, obtenerTop3UsuariosDelAnio, obtenerEstadisticasGeneralesPorUsuario, obtenerEstadisticasLibrosLeidosEnAños, obtenerTop3UsuariosDelMes, obtenerTop5LibrosDelMesYAnio, obtenerTop5LibrosDelAnio, obtenerLibrosRecomendadosSegunTematicas, obtenerTiempoTotalLeidoEnMes };

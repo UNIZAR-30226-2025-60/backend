@@ -20,7 +20,6 @@ router.get('/favoritos/:usuario_id', async (req, res) => {
 
         console.log('Ejecutando consulta SQL:', query, 'con usuario_id:', usuario_id);
 
-        // Ejecutamos la consulta
         const { rows } = await pool.query(query, [usuario_id]);
         console.log('Resultados obtenidos:', rows);
 
@@ -28,7 +27,6 @@ router.get('/favoritos/:usuario_id', async (req, res) => {
             return res.status(404).send('No se encontraron libros en la lista "Mis Favoritos".');
         }
 
-        // Devolvemos los resultados
         res.json(rows);
     } catch (error) {
         console.error('Error al obtener los libros de "Mis Favoritos":', error);
@@ -73,6 +71,8 @@ router.post('/favoritos', async (req, res) => {
     }
 });
 
+
+
 // RUTA PARA ELIMINAR UN LIBRO DE "MIS FAVORITOS"
 // Probar: 
 //   DELETE http://localhost:3000/api/listas/favoritos
@@ -112,26 +112,9 @@ router.delete('/favoritos', async (req, res) => {
 });
 
 
-// RUTA PARA OBTENER TODAS LAS LISTAS PÚBLICAS
-// Probar: 
-//   GET http://localhost:3000/api/listas/publicas
-router.get('/publicas', async (req, res) => {
-    try {
-        const listasPublicas = await Lista.findAll({
-            where: { publica: true },
-            attributes: ['nombre', 'descripcion', 'usuario_id', 'portada']
-        });
+///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
 
-        if (listasPublicas.length === 0) {
-            return res.status(404).send('No se encontraron listas públicas.');
-        }
-
-        res.json(listasPublicas);
-    } catch (error) {
-        console.error('Error al obtener las listas públicas:', error);
-        res.status(500).send('Error al obtener las listas públicas');
-    }
-});
 
 // RUTA PARA OBTENER TODOS LOS LIBROS DADA UN NOMBRE DE UN USUARIO Y SU NOMBRE DE LA LISTA
 // Probar: 
@@ -166,29 +149,6 @@ router.get('/:usuario_id/:nombre_lista/libros', async (req, res) => {
     }
 });
 
-// RUTA PARA OBTENER TODAS LAS LISTAS DADO UN USUARIO
-// Probar: 
-//   GET http://localhost:3000/api/listas/:usuario_id
-router.get('/:usuario_id', async (req, res) => {
-    try {
-        const usuario_id = req.params.usuario_id;
-
-        const listas = await Lista.findAll({
-            where: { usuario_id: usuario_id }, 
-            attributes: ['nombre', 'descripcion', 'publica', 'portada'] 
-        });
-
-        if (listas.length === 0) {
-            return res.status(404).send(`No se encontraron listas para el usuario: ${usuario_id}`);
-        }
-
-        res.json(listas); 
-    } catch (error) {
-        console.error('Error al obtener las listas:', error);
-        res.status(500).send('Error al obtener las listas');
-    }
-});
-
 // RUTA PARA OBTENER LOS ATRIBUTOS DE UNA LISTA DADO EL NOMBRE DEL USUARIO Y SU NOMBRE DE LA LISTA
 // Probar: 
 //   GET http://localhost:3000/api/listas/:usuario_id/:nombre
@@ -215,6 +175,51 @@ router.get('/:usuario_id/:nombre', async (req, res) => {
     }
 });
 
+
+// RUTA PARA OBTENER TODAS LAS LISTAS DADO UN USUARIO
+// Probar: 
+//   GET http://localhost:3000/api/listas/:usuario_id
+router.get('/:usuario_id', async (req, res) => {
+    try {
+        const usuario_id = req.params.usuario_id;
+
+        const listas = await Lista.findAll({
+            where: { usuario_id: usuario_id }, 
+            attributes: ['nombre', 'descripcion', 'publica', 'portada'] 
+        });
+
+        if (listas.length === 0) {
+            return res.status(404).send(`No se encontraron listas para el usuario: ${usuario_id}`);
+        }
+
+        res.json(listas); 
+    } catch (error) {
+        console.error('Error al obtener las listas:', error);
+        res.status(500).send('Error al obtener las listas');
+    }
+});
+
+
+// RUTA PARA OBTENER TODAS LAS LISTAS PÚBLICAS
+// Probar: 
+//   GET http://localhost:3000/api/listas/publicas
+router.get('/publicas', async (req, res) => {
+    try {
+        const listasPublicas = await Lista.findAll({
+            where: { publica: true },
+            attributes: ['nombre', 'descripcion', 'usuario_id', 'portada']
+        });
+
+        if (listasPublicas.length === 0) {
+            return res.status(404).send('No se encontraron listas públicas.');
+        }
+
+        res.json(listasPublicas);
+    } catch (error) {
+        console.error('Error al obtener las listas públicas:', error);
+        res.status(500).send('Error al obtener las listas públicas');
+    }
+});
 
 
 // RUTA PARA ACTUALIZAR ATRIBUTOS DADO UN NOMBRE DE USUARIO Y SU NOMBRE DE LISTA
@@ -257,6 +262,92 @@ router.patch('/:usuario_id/:nombre', async (req, res) => {
         res.status(500).send('Error interno del servidor');
     }
 });
+
+// RUTA PARA AÑADIR UN LIBRO A UNA LISTA DE UN USUARIO
+// Probar: 
+//   POST http://localhost:3000/api/listas/:nombreLista
+//   BODY: 
+//     {
+//       "usuario_id": "el correo de un usuario",
+//       "libro_id": "https://...enlace_libro"
+//     }
+router.post('/:nombreLista', async (req, res) => {
+    const { usuario_id, libro_id } = req.body;
+    const { nombreLista } = req.params;
+
+    try {
+        if (!usuario_id || !libro_id) {
+            return res.status(400).send('Faltan parámetros: usuario_id o libro_id');
+        }
+        if (!nombreLista) {
+            return res.status(400).send('Falta nombre de la lista.');
+        }
+
+        const query = `
+            INSERT INTO libros_lista (usuario_id, nombre_lista, enlace_libro)
+            VALUES ($1, $2, $3)
+            RETURNING *;
+        `;
+
+        const { rows } = await pool.query(query, [usuario_id, nombreLista, libro_id]);
+
+        res.status(201).json({
+            mensaje: `Libro añadido a la lista "${nombreLista}".`,
+            libro: rows[0],
+        });
+    } catch (error) {
+        console.error('Error al añadir libro a la lista:', error);
+        if (error.code === '23505') {  
+            return res.status(409).send(`El libro ya está en la lista "${nombreLista}".`);
+        }
+        res.status(500).send('Error interno del servidor');
+    }
+});
+
+
+// RUTA PARA ELIMINAR UN LIBRO DADO UN USUARIO Y UNA LISTA
+// Probar: 
+//   DELETE http://localhost:3000/api/listas/:nombreLista
+//   BODY:
+//     {
+//       "usuario_id": "el correo de un usuario",
+//       "libro_id": "https://...enlace_libro"
+//     }
+router.delete('/:nombreLista', async (req, res) => {
+    const { usuario_id, libro_id } = req.body;
+    const { nombreLista } = req.params;
+
+    try {
+        if (!usuario_id || !libro_id || !nombreLista) {
+            return res.status(400).send('Faltan parámetros: usuario_id o libro_id');
+        }
+
+        if (!nombreLista) {
+            return res.status(400).send('Falta el nombre de la lista');
+        }
+
+        const query = `
+            DELETE FROM libros_lista
+            WHERE usuario_id = $1 AND nombre_lista = $2 AND enlace_libro = $3
+            RETURNING *;
+        `;
+
+        const { rows } = await pool.query(query, [usuario_id, nombreLista, libro_id]);
+
+        if (rows.length === 0) {
+            return res.status(404).send(`El libro no se encuentra en la lista "${nombreLista}".`);
+        }
+
+        res.json({
+            mensaje: `Libro eliminado de la lista "${nombreLista}".`,
+            eliminado: rows[0],
+        });
+    } catch (error) {
+        console.error('Error al eliminar libro de la lista:', error);
+        res.status(500).send('Error interno del servidor');
+    }
+});
+
 
 
 // RUTA PARA CREAR UNA NUEVA LISTA

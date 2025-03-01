@@ -9,22 +9,19 @@ const { Opinion , agregarOpinion , obtenerOpinionesPorUsuario } = require('../mo
 router.get('/valoracion/:enlace/:valor', async (req, res) => {
     try {
         const enlace = decodeURIComponent(req.params.enlace);
-        const valor = parseInt(req.params.valor, 10); // convertimos a número
+        const valor = parseInt(req.params.valor, 10); 
 
-        // Validamos que sea un valor entre 1 y 5
         if (isNaN(valor) || valor < 1 || valor > 5) {
             return res.status(400).json({ 
                 error: 'Valor inválido. Debe ser un número entre 1 y 5.' 
             });
         }
 
-        // Verificamos que el libro exista
         const libro = await Libro.findOne({ where: { enlace } });
         if (!libro) {
             return res.status(404).json({ error: 'Libro no encontrado' });
         }
 
-        // Buscamos las opiniones que coincidan con el enlace y la valoración
         const opiniones = await Opinion.findAll({
             where: {
                 libro_id: enlace,
@@ -32,7 +29,6 @@ router.get('/valoracion/:enlace/:valor', async (req, res) => {
             }
         });
 
-        // Devolvemos las opiniones filtradas
         return res.json(opiniones);
 
     } catch (error) {
@@ -65,7 +61,6 @@ router.get('/:enlace', async (req, res) => {
         const enlace = decodeURIComponent(req.params.enlace); 
         console.log("Enlace decodificado: ", enlace);
 
-        // Buscar el libro por el enlace
         const libro = await Libro.findOne({ where: { enlace } });
         console.log("Libro encontrado: ", libro);
 
@@ -73,7 +68,6 @@ router.get('/:enlace', async (req, res) => {
             return res.status(404).send('Libro no encontrado');
         }
 
-        // Buscar opiniones relacionadas con el libro
         const opiniones = await Opinion.findAll({
             where: { libro_id: enlace } 
         });
@@ -103,7 +97,6 @@ router.post('/', async (req, res) => {
             return res.status(400).json({ error: 'Faltan datos requeridos' });
         }
 
-        // Verificar si el libro existe
         const libro = await Libro.findOne({ where: { enlace: libro_id } });
         if (!libro) {
             return res.status(400).json({ error: "El libro no existe." });
