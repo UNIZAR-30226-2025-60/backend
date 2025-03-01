@@ -71,6 +71,21 @@ sequelize.sync({ force: false }) // Cambia a `true` si deseas sobrescribir la es
   .then(() => console.log("✅ Base de datos sincronizada."))
   .catch((err) => console.error("❌ Error al sincronizar DB:", err));
 
+  
+// Ejecutar triggers.sql
+const fs = require('fs');
+const path = require('path');
+(async () => {
+  try {
+    const triggersPath = path.join(__dirname, 'triggers.sql');
+    const triggersSQL = fs.readFileSync(triggersPath, 'utf-8');
+    await pool.query(triggersSQL);
+    console.log('✅ Triggers ejecutados correctamente.');
+  } catch (error) {
+    console.error('❌ Error al ejecutar triggers:', error);
+  }
+})();
+
 
 // Configuración de sesión
 app.use(

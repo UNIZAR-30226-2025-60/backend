@@ -44,39 +44,6 @@ router.get('/valoracion/:enlace/:valor', async (req, res) => {
     }
 });
 
-// OBTENER TODAS LA VALORACIÓN MEDIA DADO UN LIBRO 
-// http://localhost:3000/api/opiniones/valoracion/https%3A%2F%2Fdrive.google.com%2Ffile%2Fd%2F13DBqA252BfbCTaDJJOBXfqix6QypqQyB%2Fview%3Fusp%3Dsharing
-router.get('/valoracion/:enlace', async (req, res) => {
-    try {
-        // Decodificamos el enlace
-        const enlace = decodeURIComponent(req.params.enlace);
-        console.log("Enlace decodificado: ", enlace);
-
-        // Buscamos el libro
-        const libro = await Libro.findOne({ where: { enlace } });
-        if (!libro) {
-            return res.status(404).send('Libro no encontrado');
-        }
-
-        // Obtenemos las opiniones del libro
-        const opiniones = await Opinion.findAll({ where: { libro_id: enlace } });
-        if (opiniones.length === 0) {
-            // Si no hay opiniones, podrías retornar 0 o algún mensaje
-            return res.status(200).json({ valoracion: 0 });
-        }
-
-        // Calculamos la valoración promedio
-        const suma = opiniones.reduce((total, op) => total + op.valor, 0);
-        const promedio = suma / opiniones.length;
-
-        // Devolvemos solo la valoración
-        res.json({ valoracion: promedio });
-    } catch (error) {
-        console.error("Error al obtener la valoración:", error);
-        res.status(500).send('Error al obtener la valoración');
-    }
-});
-
 // OBTENER TODAS LAS VALORACIONES DE UN USUARIO, DADO UN USUARIO
 router.get('/usuario/:usuario_id', async (req, res) => {
     try {
