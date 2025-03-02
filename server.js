@@ -25,6 +25,7 @@ const opinionesRoutes = require("./routes/opiniones");
 const listasRoutes = require("./routes/listas");
 const fragmentosRoutes = require("./routes/fragmentos");
 const estadisticasRoutes = require("./routes/estadisticas");
+const proxyPDF = require('./routes/proxyPDF');
 
 const { FOREIGNKEYS } = require("sequelize/lib/query-types");
 
@@ -94,7 +95,8 @@ app.use(
     resave: false,
     saveUninitialized: false, // Evita sesiones vacías
     cookie: {
-      httpOnly: true,
+      // httpOnly: true,
+      httpOnly: false,
       // secure: false,
       // sameSite: "lax",
       secure: process.env.NODE_ENV === "production", // true en producción
@@ -145,6 +147,7 @@ passport.serializeUser((user, done) => {
 passport.deserializeUser(async (correo, done) => {
   try {
     const user = await User.findOne({ where: { correo } });
+    console.log("🔄 Deserializando usuario:", user?.correo); // Verifica si el usuario se carga
     done(null, user ? user.get({ plain: true }) : null);
   } catch (error) {
     done(error, null);
@@ -179,6 +182,7 @@ app.use("/api/opiniones", opinionesRoutes);
 app.use("/api/listas", listasRoutes);
 app.use("/api/fragmentos", fragmentosRoutes);
 app.use("/api/estadisticas", estadisticasRoutes);
+app.use('/api', proxyPDF);
 
 // Iniciar servidor
 app.listen(PORT, () => {
