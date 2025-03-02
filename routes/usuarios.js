@@ -36,6 +36,47 @@ router.get("/usuario/:correo", async (req, res) => {
   }
 });
 
+// Ruta para cambiar la contraseña dado un usuario, su contraseña actual y su nueva contraseña
+router.post("/usuario/cambiar-contrasena", async (req, res) => {
+  const { correo, oldPassword, newPassword } = req.body;
+
+  try {
+    // Paso 1: Buscar el usuario por su correo
+    const result = await pool.query("SELECT * FROM USUARIO WHERE correo = $1", [correo]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    const user = result.rows[0];
+
+    // Paso 2: Verificar la contraseña antigua (cifrada)
+    const isMatch = await bcrypt.compare(oldPassword, user.contrasena);
+    if (!isMatch) {
+      return res.status(400).json({ error: "La contraseña actual es incorrecta" });
+    }
+
+    // Paso 3: Cifrar la nueva contraseña
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+    // Paso 4: Actualizar la contraseña en la base de datos
+    const updateResult = await pool.query(
+      "UPDATE USUARIO SET contrasena = $1 WHERE correo = $2",
+      [hashedPassword, correo]
+    );
+
+    if (updateResult.rowCount === 0) {
+      return res.status(400).json({ error: "No se pudo actualizar la contraseña" });
+    }
+
+    return res.status(200).json({ message: "Contraseña actualizada correctamente" });
+  } catch (error) {
+    console.error("Error al cambiar la contraseña:", error);
+    res.status(500).json({ error: "Hubo un error al cambiar la contraseña" });
+  }
+});
+
 // Ruta para registrar y dejar la sesión iniciado automáticamente de un nuevo usuario en el sistema
 router.post('/registro', async (req, res) => {
     console.log('Datos recibidos en el backend:', req.body);
