@@ -19,6 +19,23 @@ const { registrarUser } = require('../models/User');
 //     }
 // });
 
+//Ruta para obtener toda la información de un usuario
+router.get("/usuario/:correo", async (req, res) => {
+  const { correo } = req.params;
+  try {
+    const result = await pool.query("SELECT * FROM USUARIO WHERE correo = $1", [correo]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    res.json(result.rows[0]); // Enviamos todos los datos del usuario
+  } catch (error) {
+    console.error("Error al obtener usuario:", error);
+    res.status(500).json({ error: "Error al obtener usuario" });
+  }
+});
+
 // Ruta para registrar y dejar la sesión iniciado automáticamente de un nuevo usuario en el sistema
 router.post('/registro', async (req, res) => {
     console.log('Datos recibidos en el backend:', req.body);
