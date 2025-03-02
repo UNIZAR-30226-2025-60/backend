@@ -60,24 +60,28 @@ router.get(
       return res.status(500).json({ error: "Error en la autenticación con Google." });
     }
 
-    // 🔥 Configuración dinámica según el entorno
-    const cookieOptions = {
-      httpOnly: false, // Permitir acceso desde el frontend
+    // 🔥 Configurar correctamente la cookie para que sea accesible desde el frontend
+    res.cookie("userEmail", req.user.correo, {
+      httpOnly: false, // Permitir acceso desde JavaScript en el frontend
       secure: process.env.NODE_ENV === "production", // HTTPS en producción
-      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax", // "None" en Render, "Lax" en localhost
+      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+      domain: process.env.NODE_ENV === "production" ? "booklyweb-469w.onrender.com" : undefined,
       maxAge: 24 * 60 * 60 * 1000, // 1 día de duración
-    };
+    });
 
-    // Solo asignar `domain` en producción
-    if (process.env.NODE_ENV === "production") {
-      cookieOptions.domain = "booklyweb-469w.onrender.com"; // Dominio del frontend en Render
-    }
-
-    res.cookie("userEmail", req.user.correo, cookieOptions);
-    console.log("🍪 Cookie establecida con opciones:", cookieOptions);
+    console.log("🍪 Cookie `userEmail` establecida correctamente con opciones:");
+    console.log({
+      httpOnly: false,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+      domain: process.env.NODE_ENV === "production" ? "booklyweb-469w.onrender.com" : undefined,
+      maxAge: 24 * 60 * 60 * 1000,
+    });
 
     res.redirect(`${FRONTEND_URL}/inicio`);
   }
 );
+
+
 
 module.exports = router;
