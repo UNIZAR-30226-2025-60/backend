@@ -66,11 +66,6 @@ router.get(
       maxAge: 24 * 60 * 60 * 1000, // 1 día de duración
     };
 
-    // Solo agregar `domain` en producción para Render
-    if (process.env.NODE_ENV === "production") {
-      cookieOptions.domain = "booklyweb-469w.onrender.com";
-    }
-
     // 🌟 Establecer la cookie con las opciones definidas
     res.cookie("userEmail", req.user.correo, cookieOptions);
 
