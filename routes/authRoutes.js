@@ -35,8 +35,6 @@
 
 
 // module.exports = router;
-
-
 const express = require("express");
 const passport = require("passport");
 
@@ -60,28 +58,27 @@ router.get(
       return res.status(500).json({ error: "Error en la autenticación con Google." });
     }
 
-    // 🔥 Configurar correctamente la cookie para que sea accesible desde el frontend
-    res.cookie("userEmail", req.user.correo, {
-      httpOnly: false, // Permitir acceso desde JavaScript en el frontend
+    // 🔥 Definir opciones de la cookie antes de usarla
+    const cookieOptions = {
+      httpOnly: false, // ⚠️ Permitir acceso desde el frontend
       secure: process.env.NODE_ENV === "production", // HTTPS en producción
       sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
-      domain: process.env.NODE_ENV === "production" ? "booklyweb-469w.onrender.com" : undefined,
       maxAge: 24 * 60 * 60 * 1000, // 1 día de duración
-    });
+    };
 
-    console.log("🍪 Cookie `userEmail` establecida correctamente con opciones:");
-    console.log({
-      httpOnly: false,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
-      domain: process.env.NODE_ENV === "production" ? "booklyweb-469w.onrender.com" : undefined,
-      maxAge: 24 * 60 * 60 * 1000,
-    });
+    // Solo agregar `domain` en producción para Render
+    if (process.env.NODE_ENV === "production") {
+      cookieOptions.domain = "booklyweb-469w.onrender.com";
+    }
 
+    // 🌟 Establecer la cookie con las opciones definidas
+    res.cookie("userEmail", req.user.correo, cookieOptions);
+
+    console.log("🍪 Cookie establecida correctamente con opciones:", cookieOptions);
+
+    // Redirigir al frontend
     res.redirect(`${FRONTEND_URL}/inicio`);
   }
 );
-
-
 
 module.exports = router;
