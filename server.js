@@ -101,6 +101,7 @@ app.use(
       // sameSite: "lax",
       secure: process.env.NODE_ENV === "production", // true en producción
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      domain: ".onrender.com", // Permite que el frontend y backend compartan la cookie
     },
   })
 );
