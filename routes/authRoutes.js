@@ -48,8 +48,6 @@ const FRONTEND_URL = isLocal
   : "https://booklyweb-469w.onrender.com";
 
 // Ruta para iniciar sesión con Google
-router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
-
 router.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/" }),
@@ -62,17 +60,17 @@ router.get(
       return res.status(500).json({ error: "Error en la autenticación con Google." });
     }
 
-    // Definir opciones de la cookie
+    // 🔥 Configuración dinámica según el entorno
     const cookieOptions = {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
-      maxAge: 24 * 60 * 60 * 1000,
+      httpOnly: false, // Permitir acceso desde el frontend
+      secure: process.env.NODE_ENV === "production", // HTTPS en producción
+      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax", // "None" en Render, "Lax" en localhost
+      maxAge: 24 * 60 * 60 * 1000, // 1 día de duración
     };
 
     // Solo asignar `domain` en producción
     if (process.env.NODE_ENV === "production") {
-      cookieOptions.domain = "booklyweb-469w.onrender.com";
+      cookieOptions.domain = "booklyweb-469w.onrender.com"; // Dominio del frontend en Render
     }
 
     res.cookie("userEmail", req.user.correo, cookieOptions);
@@ -81,4 +79,5 @@ router.get(
     res.redirect(`${FRONTEND_URL}/inicio`);
   }
 );
+
 module.exports = router;
