@@ -66,6 +66,8 @@ router.get(
       maxAge: 24 * 60 * 60 * 1000, // 1 día de duración
     };
     res.cookie("userEmail", req.user.correo, cookieOptions);
+    res.setHeader("Set-Cookie", `userEmail=${req.user.correo}; Secure; HttpOnly=false; SameSite=None; Path=/`);
+
     console.log("🍪 Cookie establecida en backend:", cookieOptions);
     
 
