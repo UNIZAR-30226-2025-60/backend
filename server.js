@@ -40,27 +40,24 @@ const allowedOrigins = [
   process.env.RENDER_FRONTEND_URL || "https://booklyweb-469w.onrender.com"
 ];
 
-const cookieParser = require("cookie-parser");
-app.use(cookieParser());  // Necesario para leer cookies en backend
-
-app.use(
-  cors({
-    origin: allowedOrigins,
-    credentials: true,
-  })
-);
 // app.use(
 //   cors({
-//     origin: function (origin, callback) {
-//       if (!origin || allowedOrigins.includes(origin)) {
-//         callback(null, true);
-//       } else {
-//         callback(new Error("Not allowed by CORS"));
-//       }
-//     },
-//     credentials: true, 
+//     origin: allowedOrigins,
+//     credentials: true,
 //   })
 // );
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true, 
+  })
+);
 
 // Middleware para procesar JSON
 app.use(express.json());
