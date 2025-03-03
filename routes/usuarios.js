@@ -363,6 +363,20 @@ router.get('/paginas-favoritas', async (req, res) => {
   }
 });
 
+// OBTENER TODAS LAS FOTOS DE PERFIL
+// Probar:
+//      GET http://localhost:3000/api/usuarios/fotos-perfil
+router.get('/fotos-perfil', async (req, res) => {
+  try {
+      const query = 'SELECT url FROM imagen_perfil';
+      const { rows } = await pool.query(query);
+
+      res.json(rows);
+  } catch (error) {
+      console.error('Error al obtener fotos de perfil:', error);
+      res.status(500).send('Error interno del servidor');
+  }
+});
 
 
   router.get('/obtener-pdf/:id', async (req, res) => {
