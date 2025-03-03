@@ -34,6 +34,29 @@ router.get('/favoritos/:usuario_id', async (req, res) => {
     }
 });
 
+// RUTA PARA OBTENER TODAS LAS PORTADAS DE LIBROS Y SUS TEMÁTICAS
+// Probar:
+//      GET http://localhost:3000/api/listas/portadas-temas
+router.get('/portadas-temas', async (req, res) => {
+    try {
+
+        const query = `
+            SELECT l.imagen_portada AS portada, t.tematica
+            FROM libro l
+            LEFT JOIN tema_asociado ta ON l.enlace = ta.enlace
+            LEFT JOIN tema t ON ta.tematica = t.tematica
+        `;
+
+        const { rows } = await pool.query(query);
+
+        res.json(rows);
+    } catch (error) {
+        console.error('Error al obtener portadas y su temática:', error);
+        res.status(500).send('Error interno del servidor');
+    }
+});
+
+
 // RUTA PARA AÑADIR UN LIBRO A "MIS FAVORITOS"
 // Probar: 
 //  POST http://localhost:3000/api/listas/favoritos
