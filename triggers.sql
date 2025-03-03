@@ -1,5 +1,10 @@
 -- TRIGGER PARA QUE SE ACTUALICE LA PUNTUACIÓN MEDIA DE UN LIBRO AUTOMÁTICAMENTE
--- FUNCIONAAAAAA
+
+-- Eliminar la función y el trigger si ya existen
+DROP TRIGGER IF EXISTS tg_actualizar_puntuacion_media ON opinion CASCADE;
+DROP FUNCTION IF EXISTS actualizar_puntuacion_media() CASCADE;
+
+-- Crear/Reemplazar la función
 CREATE OR REPLACE FUNCTION actualizar_puntuacion_media()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -25,8 +30,23 @@ BEGIN
 END;
 $$;
 
-
+-- Crear el trigger de nuevo
 CREATE TRIGGER tg_actualizar_puntuacion_media
-AFTER INSERT OR UPDATE OR DELETE ON OPINION
+AFTER INSERT OR UPDATE OR DELETE ON opinion
 FOR EACH ROW
 EXECUTE FUNCTION actualizar_puntuacion_media();
+
+-- Ajuste de la constraint en libros_lista
+BEGIN;
+
+ALTER TABLE "libros_lista"
+  DROP CONSTRAINT IF EXISTS "libros_lista_usuario_id_nombre_lista_fkey";
+
+ALTER TABLE "libros_lista"
+  ADD CONSTRAINT "libros_lista_usuario_id_nombre_lista_fkey"
+  FOREIGN KEY ("usuario_id", "nombre_lista")
+  REFERENCES "lista"("usuario_id", "nombre")
+  ON UPDATE CASCADE
+  ON DELETE CASCADE;
+
+COMMIT;

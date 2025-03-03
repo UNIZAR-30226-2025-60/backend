@@ -60,7 +60,7 @@ CREATE TABLE libros_lista (
   nombre_lista VARCHAR(255),
   enlace_libro TEXT REFERENCES LIBRO(enlace) ON DELETE CASCADE,
   PRIMARY KEY (usuario_id, nombre_lista, enlace_libro),
-  FOREIGN KEY (usuario_id, nombre_lista) REFERENCES LISTA(usuario_id, nombre) ON DELETE CASCADE
+  FOREIGN KEY (usuario_id, nombre_lista) REFERENCES LISTA(usuario_id, nombre) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- Tabla de relación N:M entre USUARIOS y LIBROS (lectura en proceso)

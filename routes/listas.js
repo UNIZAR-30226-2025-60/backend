@@ -229,39 +229,51 @@ router.get('/publicas', async (req, res) => {
     // {
     //     "descripcion": "el correo de un usuario",
     //     "publica": "true",
-    //     "portada": "https:..."
+    //     "portada": "https:...",
+    //     "nuevoNombre": "NOMBRELISTAANUEVO"
     //  }
     // OJO, al ser modificar, puedes poner los atributos que te de
     // la gana para modificar, como si pones solo uno.
-router.patch('/:usuario_id/:nombre', async (req, res) => {
-    const { usuario_id, nombre } = req.params;
-    const camposParaActualizar = {};
-
-    if (req.body.descripcion !== undefined) {
-        camposParaActualizar.descripcion = req.body.descripcion;
-    }
-    if (req.body.publica !== undefined) {
-        camposParaActualizar.publica = req.body.publica;
-    }
-    if (req.body.portada !== undefined) {
-        camposParaActualizar.portada = req.body.portada;
-    }
-
-    try {
-        const resultado = await Lista.update(camposParaActualizar, {
-            where: { usuario_id: usuario_id, nombre: nombre }
-        });
-
-        if (resultado[0] === 0) {
-            return res.status(404).send('Lista no encontrada o sin cambios.');
+    router.patch('/:usuario_id/:nombre', async (req, res) => {
+        const { usuario_id, nombre } = req.params;
+        const { descripcion, publica, portada, nuevoNombre } = req.body;
+        const camposParaActualizar = {};
+    
+        if (descripcion !== undefined) {
+            camposParaActualizar.descripcion = descripcion;
         }
-
-        res.send('Lista actualizada correctamente.');
-    } catch (error) {
-        console.error('Error al actualizar la lista:', error);
-        res.status(500).send('Error interno del servidor');
-    }
-});
+        if (publica !== undefined) {
+            camposParaActualizar.publica = publica;
+        }
+        if (portada !== undefined) {
+            camposParaActualizar.portada = portada;
+        }
+        if (nuevoNombre !== undefined) {
+            // Se actualiza el nombre en la tabla "lista"
+            camposParaActualizar.nombre = nuevoNombre;
+        }
+    
+        if (Object.keys(camposParaActualizar).length === 0) {
+            return res.status(400).json({ error: 'No se ha proporcionado ningún campo para actualizar.' });
+        }
+    
+        try {
+            // Actualizamos SOLO la tabla lista -> ON UPDATE CASCADE propagará el cambio a libros_lista
+            const resultado = await Lista.update(camposParaActualizar, {
+                where: { usuario_id, nombre }
+            });
+    
+            if (resultado[0] === 0) {
+                return res.status(404).send('Lista no encontrada o sin cambios.');
+            }
+    
+            res.send('Lista actualizada correctamente.');
+        } catch (error) {
+            console.error('Error al actualizar la lista:', error);
+            res.status(500).send('Error interno del servidor');
+        }
+    });
+        
 
 // RUTA PARA AÑADIR UN LIBRO A UNA LISTA DE UN USUARIO
 // Probar: 
