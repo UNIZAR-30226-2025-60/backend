@@ -121,44 +121,91 @@ router.post('/registro', async (req, res) => {
 });
 
 // Ruta para iniciar sesión de un usuario ya registrado en el sistema
+// router.post('/login', async (req, res) => {
+//     const { correo, contrasena } = req.body;
+//     try {
+//         const result = await pool.query(
+//             'SELECT * FROM USUARIO WHERE correo = $1',
+//             [correo]
+//         );
+
+//         if (result.rows.length === 0) {
+//             return res.status(401).send('Correo o contraseña incorrectos');
+//         }
+
+//         const user = result.rows[0];
+//         const isMatch = await bcrypt.compare(contrasena, user.contrasena);
+//         if (!isMatch) {
+//             return res.status(401).send('Correo o contraseña incorrectos');
+//         }
+//         req.login(user, (err) => {
+//             if (err) {
+//                 console.error('Error al iniciar sesión:', err);
+//                 return res.status(500).send('Error al iniciar sesión');
+//             }
+//             req.session.save((err) => {
+//                 if (err) {
+//                     console.error('Error al guardar sesión:', err);
+//                     return res.status(500).send('Error al guardar sesión');
+//                 }
+//                 res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8081');
+//                 res.setHeader('Access-Control-Allow-Credentials', 'true');
+//                 res.status(200).json(user);
+//             });
+//         });
+//     } catch (error) {
+//         console.error('Error al iniciar sesión:', error);
+//         res.status(500).send('Error al iniciar sesión: ' + error.message);
+//     }
+// });
+
+// Ruta para iniciar sesión de un usuario ya registrado en el sistema
 router.post('/login', async (req, res) => {
-    const { correo, contrasena } = req.body;
-    try {
-        const result = await pool.query(
-            'SELECT * FROM USUARIO WHERE correo = $1',
-            [correo]
-        );
+  const { correo, contrasena } = req.body;
+  try {
+      const result = await pool.query(
+          'SELECT * FROM USUARIO WHERE correo = $1',
+          [correo]
+      );
 
-        if (result.rows.length === 0) {
-            return res.status(401).send('Correo o contraseña incorrectos');
-        }
+      if (result.rows.length === 0) {
+          return res.status(401).json({ error: 'Correo o contraseña incorrectos' });
+      }
 
-        const user = result.rows[0];
-        const isMatch = await bcrypt.compare(contrasena, user.contrasena);
-        if (!isMatch) {
-            return res.status(401).send('Correo o contraseña incorrectos');
-        }
-        req.login(user, (err) => {
-            if (err) {
-                console.error('Error al iniciar sesión:', err);
-                return res.status(500).send('Error al iniciar sesión');
-            }
-            req.session.save((err) => {
-                if (err) {
-                    console.error('Error al guardar sesión:', err);
-                    return res.status(500).send('Error al guardar sesión');
-                }
-                res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8081');
-                res.setHeader('Access-Control-Allow-Credentials', 'true');
-                res.status(200).json(user);
-            });
-        });
-    } catch (error) {
-        console.error('Error al iniciar sesión:', error);
-        res.status(500).send('Error al iniciar sesión: ' + error.message);
-    }
+      const user = result.rows[0];
+      const isMatch = await bcrypt.compare(contrasena, user.contrasena);
+      if (!isMatch) {
+          return res.status(401).json({ error: 'Correo o contraseña incorrectos' });
+      }
+
+      // 🔥 Establecer la sesión manualmente
+      req.session.user = { correo: user.correo, nombre: user.nombre };
+      console.log("✅ Sesión iniciada para:", req.session.user);
+
+      // 🔥 Configurar cookie manualmente para Render
+      res.cookie("userEmail", user.correo, {
+          httpOnly: false,  // Permitir acceso desde el frontend
+          secure: process.env.NODE_ENV === "production",  // HTTPS en producción
+          sameSite: "None",  // Requerido para compartir cookies en Render
+          domain: process.env.NODE_ENV === "production" ? ".onrender.com" : undefined,
+          maxAge: 24 * 60 * 60 * 1000,  // 1 día de duración
+      });
+
+      // 🔥 Permitir credenciales en CORS
+      res.setHeader("Access-Control-Allow-Origin", process.env.NODE_ENV === "production"
+          ? "https://booklyweb-469w.onrender.com"
+          : "http://localhost:8081"
+      );
+      res.setHeader("Access-Control-Allow-Credentials", "true");
+
+      console.log("🍪 Cookie de sesión establecida correctamente para:", user.correo);
+      res.status(200).json({ mensaje: "Inicio de sesión exitoso", correo: user.correo });
+
+  } catch (error) {
+      console.error('❌ Error al iniciar sesión:', error);
+      res.status(500).json({ error: 'Error en el servidor: ' + error.message });
+  }
 });
-
 
 
 
