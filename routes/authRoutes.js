@@ -58,18 +58,16 @@ router.get(
       return res.status(500).json({ error: "Error en la autenticación con Google." });
     }
 
-    // 🔥 Definir opciones de la cookie antes de usarla
     const cookieOptions = {
-      httpOnly: false, // ⚠️ Permitir acceso desde el frontend
+      httpOnly: false,  // ⚠️ Permitir acceso desde el frontend
       secure: process.env.NODE_ENV === "production", // HTTPS en producción
-      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+      sameSite: "None", // 🔥 Para que funcione en Render
+      domain: process.env.NODE_ENV === "production" ? "booklyweb-469w.onrender.com" : undefined,
       maxAge: 24 * 60 * 60 * 1000, // 1 día de duración
     };
-
-    // 🌟 Establecer la cookie con las opciones definidas
     res.cookie("userEmail", req.user.correo, cookieOptions);
-
-    console.log("🍪 Cookie establecida correctamente con opciones:", cookieOptions);
+    console.log("🍪 Cookie establecida en backend:", cookieOptions);
+    
 
     // Redirigir al frontend
     res.redirect(`${FRONTEND_URL}/inicio`);
