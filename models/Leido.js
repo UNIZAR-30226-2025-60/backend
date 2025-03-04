@@ -93,7 +93,6 @@ const obtenerEstadisticasLibrosLeidosEnMes = async (correo, year, month) => {
 };
 
 
-
 const obtenerEstadisticasLibrosLeidosEnAños = async (correo, year) => {
     try {
         console.log(`Obteniendo estadísticas para el usuario: ${correo} y el año: ${year}`);
@@ -102,15 +101,14 @@ const obtenerEstadisticasLibrosLeidosEnAños = async (correo, year) => {
             SELECT COUNT(*) AS libros_completados
             FROM "leidos" AS le
             WHERE le."usuario_id" = :correo
-            AND DATE(le."fecha_fin_lectura") <= CURRENT_DATE
-            AND EXTRACT(YEAR FROM le."fecha_fin_lectura") = :year
+              AND DATE(le."fecha_fin_lectura") <= CURRENT_DATE
+              AND EXTRACT(YEAR FROM le."fecha_fin_lectura") = :year
         `;
         
         const resultLibrosCompletados = await sequelize.query(queryLibrosCompletados, {
             replacements: { correo, year },
             type: sequelize.QueryTypes.SELECT
         });
-
         const libros_completados = resultLibrosCompletados[0]?.libros_completados || 0;
         console.log('Libros completados:', libros_completados);
 
@@ -119,7 +117,7 @@ const obtenerEstadisticasLibrosLeidosEnAños = async (correo, year) => {
             FROM "leidos" AS le
             JOIN "libro" AS l ON le."libro_id" = l."enlace"
             WHERE le."usuario_id" = :correo
-            AND EXTRACT(YEAR FROM le."fecha_fin_lectura") = :year
+              AND EXTRACT(YEAR FROM le."fecha_fin_lectura") = :year
         `;
         
         const librosLeidos = await sequelize.query(queryLibrosLeidos, {
@@ -128,9 +126,28 @@ const obtenerEstadisticasLibrosLeidosEnAños = async (correo, year) => {
         });
         console.log('Libros leídos:', librosLeidos);
 
+        const queryTematicasMasLeidas = `
+            SELECT ta."tematica", COUNT(*) AS cantidad
+            FROM "leidos" AS le
+            JOIN "tema_asociado" AS ta ON le."libro_id" = ta."enlace"
+            WHERE le."usuario_id" = :correo
+              AND EXTRACT(YEAR FROM le."fecha_fin_lectura") = :year
+            GROUP BY ta."tematica"
+            ORDER BY cantidad DESC
+            LIMIT 3
+        `;
+        
+        const resultTematicas = await sequelize.query(queryTematicasMasLeidas, {
+            replacements: { correo, year },
+            type: sequelize.QueryTypes.SELECT
+        });
+        const tematicasMasLeidas = resultTematicas.map(item => item.tematica);
+        console.log('Temáticas más leídas:', tematicasMasLeidas);
+
         return {
             libros_completados,
-            librosLeidos: librosLeidos || []  
+            librosLeidos: librosLeidos || [],
+            tematicasMasLeidas,
         };
 
     } catch (error) {
@@ -138,6 +155,7 @@ const obtenerEstadisticasLibrosLeidosEnAños = async (correo, year) => {
         throw new Error('Error al obtener las estadísticas de libros leídos en el año');
     }
 };
+
 
 const obtenerEstadisticasGeneralesPorUsuario = async (correo) => {
     try {

@@ -49,7 +49,8 @@ router.get('/portadas-temas', async (req, res) => {
       console.error('Error al obtener fotos de perfil:', error);
       res.status(500).send('Error interno del servidor');
     }
-  });
+});
+
   
 
 // RUTA PARA AÑADIR UN LIBRO A "MIS FAVORITOS"
