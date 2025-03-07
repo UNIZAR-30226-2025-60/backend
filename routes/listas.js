@@ -90,6 +90,26 @@ router.post('/favoritos', async (req, res) => {
     }
 });
 
+// RUTA PARA OBTENER TODAS LAS LISTAS PÚBLICAS
+// Probar: 
+//   GET http://localhost:3000/api/listas/publicas
+router.get('/publicas', async (req, res) => {
+    try {
+        const listasPublicas = await Lista.findAll({
+            where: { publica: true },
+            attributes: ['nombre', 'descripcion', 'usuario_id', 'portada']
+        });
+
+        if (listasPublicas.length === 0) {
+            return res.status(404).send('No se encontraron listas públicas.');
+        }
+
+        res.json(listasPublicas);
+    } catch (error) {
+        console.error('Error al obtener las listas públicas:', error);
+        res.status(500).send('Error al obtener las listas públicas');
+    }
+});
 
 
 // RUTA PARA ELIMINAR UN LIBRO DE "MIS FAVORITOS"
@@ -215,28 +235,6 @@ router.get('/:usuario_id', async (req, res) => {
     } catch (error) {
         console.error('Error al obtener las listas:', error);
         res.status(500).send('Error al obtener las listas');
-    }
-});
-
-
-// RUTA PARA OBTENER TODAS LAS LISTAS PÚBLICAS
-// Probar: 
-//   GET http://localhost:3000/api/listas/publicas
-router.get('/publicas', async (req, res) => {
-    try {
-        const listasPublicas = await Lista.findAll({
-            where: { publica: true },
-            attributes: ['nombre', 'descripcion', 'usuario_id', 'portada']
-        });
-
-        if (listasPublicas.length === 0) {
-            return res.status(404).send('No se encontraron listas públicas.');
-        }
-
-        res.json(listasPublicas);
-    } catch (error) {
-        console.error('Error al obtener las listas públicas:', error);
-        res.status(500).send('Error al obtener las listas públicas');
     }
 });
 
