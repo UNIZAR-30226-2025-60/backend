@@ -6,6 +6,8 @@ const { Tema } = require('../models/Tema');  // Importar el modelo Tema
 const { Op } = require('sequelize');
 const { User } = require('../models/User');
 const { Leido, obtenerLibrosLeidosPorUsuario  } = require('../models/Leido');
+const { sequelize } = require('../db/db');
+
 
 // Ruta para obtener todos los libros
 router.get('/', async (req, res) => {
@@ -154,7 +156,43 @@ router.get('/enproceso/:correo', async (req, res) => {
       console.error('Error al obtener libros en proceso:', error);
       res.status(500).send('Error al obtener libros en proceso');
     }
-  });
+});
+
+
+// Ruta para guardar un libro en proceso
+router.post('/enproceso', async (req, res) => {
+    const { correo, enlace, pagina } = req.body;
+
+    try {
+        const usuarioExistente = await User.findOne({ where: { correo } });
+        if (!usuarioExistente) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+
+        const libroExistente = await Libro.findOne({ where: { enlace } });
+        if (!libroExistente) {
+            return res.status(404).json({ error: 'Libro no encontrado' });
+        }
+
+        if (pagina <=0 || pagina > libroExistente.num_paginas) {
+            return res.status(400).json({ error: `La página debe estar entre 1 y ${libroExistente.num_paginas}` });
+        }
+
+        // Usar UPSERT o UPDATE
+        const [libroEnProceso, created] = await sequelize.query(
+            `INSERT INTO en_proceso (usuario_id, libro_id, pagina)
+            VALUES (:correo, :enlace, :pagina)
+            ON CONFLICT (usuario_id, libro_id) DO UPDATE
+            SET pagina = :pagina`,
+            { replacements: { correo, enlace, pagina } }
+        );
+
+        res.status(201).json({ message: 'Libro guardado en proceso correctamente' });
+    } catch(error) {
+        console.error('Error al guardar libro en proceso:', error);
+        res.status(500).json({ error: 'Error al guardar libro en proceso' });
+    }
+});
 
 // Ruta para obtener los libros dado su clave primaria enlace
 //Se le llama desde front asi:
