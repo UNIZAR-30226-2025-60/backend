@@ -72,10 +72,15 @@ router.post('/favoritos', async (req, res) => {
         const query = `
             INSERT INTO libros_lista (usuario_id, nombre_lista, enlace_libro)
             VALUES ($1, 'Mis Favoritos', $2)
+            ON CONFLICT (usuario_id, nombre_lista, enlace_libro) DO NOTHING
             RETURNING *;
         `;
 
         const { rows } = await pool.query(query, [usuario_id, enlace_libro]);
+
+        if (rows.length === 0) {
+            return res.status(409).send('El libro ya está en la lista "Mis Favoritos".');
+        }
 
         res.status(201).json({
             mensaje: 'Libro añadido a la lista "Mis Favoritos".',
