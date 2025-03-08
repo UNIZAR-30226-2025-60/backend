@@ -1,4 +1,6 @@
+-- ========================================================
 -- TRIGGER PARA QUE SE ACTUALICE LA PUNTUACIÓN MEDIA DE UN LIBRO AUTOMÁTICAMENTE
+-- ========================================================
 
 -- Eliminar la función y el trigger si ya existen
 DROP TRIGGER IF EXISTS tg_actualizar_puntuacion_media ON opinion CASCADE;
@@ -30,13 +32,16 @@ BEGIN
 END;
 $$;
 
--- Crear el trigger de nuevo
+-- Crear el trigger
 CREATE TRIGGER tg_actualizar_puntuacion_media
 AFTER INSERT OR UPDATE OR DELETE ON opinion
 FOR EACH ROW
 EXECUTE FUNCTION actualizar_puntuacion_media();
 
--- Ajuste de la constraint en libros_lista
+-- ========================================================
+-- AJUSTE DE LA CONSTRAINT EN libros_lista
+-- ========================================================
+
 BEGIN;
 
 ALTER TABLE "libros_lista"
@@ -50,3 +55,33 @@ ALTER TABLE "libros_lista"
   ON DELETE CASCADE;
 
 COMMIT;
+
+-- ========================================================
+-- TRIGGER PARA CREAR LISTAS AUTOMÁTICAMENTE AL CREAR UN USUARIO
+-- ========================================================
+
+-- Eliminar el trigger y la función si ya existen
+DROP TRIGGER IF EXISTS trigger_crear_listas_usuario ON usuario;
+DROP FUNCTION IF EXISTS crear_listas_usuario() CASCADE;
+
+-- Crear o reemplazar la función para insertar las listas por defecto
+CREATE OR REPLACE FUNCTION crear_listas_usuario()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    INSERT INTO lista (nombre, usuario_id, descripcion, publica)
+    VALUES 
+      ('Mis Favoritos', NEW.correo, 'Lista de mis favoritos', false),
+      ('Leídos', NEW.correo, 'Lista de libros leídos', false),
+      ('En proceso', NEW.correo, 'Lista de libros en proceso', false);
+      
+    RETURN NEW;
+END;
+$$;
+
+-- Crear el trigger que se ejecute después de insertar en la tabla usuario
+CREATE TRIGGER trigger_crear_listas_usuario
+AFTER INSERT ON usuario
+FOR EACH ROW
+EXECUTE FUNCTION crear_listas_usuario();
