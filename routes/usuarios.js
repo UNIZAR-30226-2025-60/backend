@@ -345,6 +345,75 @@ router.post('/guardar-favorita', async (req, res) => {
   }
 });
 
+// Eliminar páginas favoritas
+router.delete('/eliminar-favorita', async (req, res) => {
+  let { correo, enlace, pagina } = req.body;
+
+  console.log("📩 Correo recibido antes de decodificar:", correo);
+  correo = decodeURIComponent(correo);  // 🔥 Decodificar el correo
+  console.log("✅ Correo decodificado:", correo);
+
+  console.log("📌 Enlace recibido antes de procesar:", enlace);
+
+  try {
+    // Transformar la URL si es del proxy
+    const match = enlace.match(/id=([^&]+)/);
+    if (match && match[1]) {
+      const fileId = match[1];
+      enlace = `https://drive.google.com/file/d/${fileId}/view?usp=sharing`;
+    }
+
+    console.log("✅ Enlace convertido para Neon:", enlace);
+
+    const result = await pool.query(`
+      DELETE FROM destacar_fragmento
+      WHERE enlace = $1 AND correo = $2 AND pagina = $3
+    `, [enlace, correo, pagina]);
+
+    if (result.rowCount > 0) {
+      res.status(200).json({ mensaje: "✅ Página favorita eliminada" });
+    } else {
+      res.status(404).json({ mensaje: "⚠️ La página no estaba marcada como favorita" });
+    }
+  } catch (error) {
+    console.error("❌ Error al eliminar página favorita:", error);
+    res.status(500).json({ error: "❌ Error al eliminar página favorita", detalle: error.message });
+  }
+});
+
+router.get('/verificar-favorita', async (req, res) => {
+  let { correo, enlace, pagina } = req.query;
+
+  console.log("📩 Correo recibido antes de decodificar:", correo);
+  correo = decodeURIComponent(correo);  // 🔥 Decodificar el correo
+  console.log("✅ Correo decodificado:", correo);
+
+  console.log("📌 Enlace recibido antes de procesar:", enlace);
+  
+  try {
+    // Transformar la URL si es del proxy
+    const match = enlace.match(/id=([^&]+)/);
+    if (match && match[1]) {
+      const fileId = match[1];
+      enlace = `https://drive.google.com/file/d/${fileId}/view?usp=sharing`;
+    }
+
+    console.log("✅ Enlace convertido para Neon:", enlace);
+
+    // Consulta a la base de datos
+    const result = await pool.query(
+      `SELECT 1 FROM destacar_fragmento WHERE enlace = $1 AND correo = $2 AND pagina = $3`,
+      [enlace, correo, pagina]
+    );
+
+    console.log(`📌 Número de filas encontradas: ${result.rowCount}`);
+
+    res.json({ esFavorita: result.rowCount > 0 }); 
+  } catch (error) {
+    console.error("❌ Error al verificar favorita:", error);
+    res.status(500).json({ error: "Error al verificar favorita", detalle: error.message });
+  }
+});
 
 
 // Obtener páginas favoritas
