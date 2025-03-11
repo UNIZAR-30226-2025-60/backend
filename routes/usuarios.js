@@ -149,7 +149,8 @@ router.post('/login', async (req, res) => {
                     return res.status(500).send('Error al guardar sesión');
                 }
                 // Determinar el URL del frontend según el entorno
-                const frontendUrl = process.env.RENDER ? process.env.RENDER_FRONTEND_URL : process.env.FRONTEND_URL;
+                //const frontendUrl = process.env.RENDER ? process.env.RENDER_FRONTEND_URL : process.env.FRONTEND_URL;
+                const frontendUrl = process.env.RENDER_FRONTEND_URL || process.env.FRONTEND_URL || 'http://localhost:8081';
 
                 res.setHeader('Access-Control-Allow-Origin', frontendUrl);
                 res.setHeader('Access-Control-Allow-Credentials', 'true');
