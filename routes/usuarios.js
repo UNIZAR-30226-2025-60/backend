@@ -148,7 +148,7 @@ router.post('/login', async (req, res) => {
                     console.error('Error al guardar sesión:', err);
                     return res.status(500).send('Error al guardar sesión');
                 }
-                // Determinar el URL del frontend según el entorno
+                // Cambio la URL del frontend según el entorno
                 const frontendUrl = process.env.RENDER ? process.env.RENDER_FRONTEND_URL : process.env.FRONTEND_URL;
 
                 res.setHeader('Access-Control-Allow-Origin', frontendUrl);
@@ -163,66 +163,48 @@ router.post('/login', async (req, res) => {
 });
 
 
+// Para el login en movil
+router.post('/loginM', async (req, res) => {
+  const { correo, contrasena } = req.body;
+  try {
+      const result = await pool.query(
+          'SELECT * FROM USUARIO WHERE correo = $1',
+          [correo]
+      );
 
+      if (result.rows.length === 0) {
+          return res.status(401).send('Correo o contraseña incorrectos');
+      }
 
+      const user = result.rows[0];
+      const isMatch = await bcrypt.compare(contrasena, user.contrasena);
+      if (!isMatch) {
+          return res.status(401).send('Correo o contraseña incorrectos');
+      }
 
+      req.login(user, (err) => {
+          if (err) {
+              console.error('Error al iniciar sesión:', err);
+              return res.status(500).send('Error al iniciar sesión');
+          }
+          req.session.save((err) => {
+              if (err) {
+                  console.error('Error al guardar sesión:', err);
+                  return res.status(500).send('Error al guardar sesión');
+              }
 
-
-
-
-
-
-
-
-// //Ruta para actualizar el proceso de lectura de un libro por un usuario
-// router.post('/guardar-progreso', async (req, res) => {
-//     const { correo, enlace, pagina } = req.body;
-//     try {
-//       await pool.query(
-//         `INSERT INTO en_proceso (usuario_id, libro_id, pagina)
-//          VALUES ($1, $2, $3)
-//          ON CONFLICT (usuario_id, libro_id) DO UPDATE SET pagina = $3`,
-//         [correo, enlace, pagina]
-//       );
-//       res.status(200).json({ mensaje: "Progreso guardado" });
-//     } catch (error) {
-//       res.status(500).json({ error: "Error al guardar progreso" });
-//     }
-//   });
-
-
-// //Ruta para cargar el proceso de lectura de un libro por un usuario
-//   router.get('/cargar-progreso/:correo/:enlace', async (req, res) => {
-//     const { correo, enlace } = req.params;
-//     try {
-//       const result = await pool.query(
-//         'SELECT pagina FROM en_proceso WHERE usuario_id = $1 AND libro_id = $2',
-//         [correo, enlace]
-//       );
-//       const pagina = result.rows[0] ? result.rows[0].pagina : 1;
-//       res.json({ pagina });
-//     } catch (error) {
-//       res.status(500).json({ error: "Error al cargar progreso" });
-//     }
-//   });
+              //No definir Access-Control-Allow-Origin
+              res.status(200).json(user);
+          });
+      });
+  } catch (error) {
+      console.error('Error al iniciar sesión:', error);
+      res.status(500).send('Error al iniciar sesión: ' + error.message);
+  }
+});
   
 
 
-// //Ruta para guardar un fragmento destacado por un usuario
-//   router.post('/guardar-fragmento', async (req, res) => {
-//     const { correo, enlace, pagina, fragmento } = req.body;
-//     try {
-//       await pool.query(
-//         `INSERT INTO destacar_fragmento (enlace, correo, pagina, fragmento)
-//          VALUES ($1, $2, $3, $4)`,
-//         [enlace, correo, pagina, fragmento]
-//       );
-//       res.status(201).json({ mensaje: "Fragmento guardado" });
-//     } catch (error) {
-//       res.status(500).json({ error: "Error al guardar fragmento" });
-//     }
-//   });
-  
 // Guardar la última página leída automáticamente
 router.post('/guardar-pagina', async (req, res) => {
   let { correo, libro_id, pagina } = req.body;
