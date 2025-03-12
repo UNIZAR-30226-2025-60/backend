@@ -203,6 +203,27 @@ router.post('/loginM', async (req, res) => {
   }
 });
   
+// Cambiar el nombre de un usuario
+router.post('/usuario/cambiar-nombre', async (req, res) => {
+  const { correo, nombre } = req.body;
+
+  try {
+    const result = await pool.query(
+      'UPDATE USUARIO SET nombre = $1 WHERE correo = $2 RETURNING *',
+      [nombre, correo]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error("Error al cambiar el nombre:", error);
+    res.status(500).json({ error: "Error al cambiar el nombre" });
+  }
+});
+
 
 
 // Guardar la última página leída automáticamente
@@ -250,8 +271,6 @@ router.post('/guardar-pagina', async (req, res) => {
 });
 
 
-
-// Obtener última página leída
 // Obtener última página leída
 router.get('/ultima-pagina', async (req, res) => {
   let { correo, libro_id } = req.query;
