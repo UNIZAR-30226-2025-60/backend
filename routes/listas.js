@@ -440,4 +440,34 @@ router.delete('/:usuario_id/:nombre', async (req, res) => {
     }
 });
 
+
+// RUTA PARA OBTENER TODAS LAS LISTAS DADO UN USUARIO Y UN LIBRO
+// Probar:
+//   GET http://localhost:3000/api/listas/:usuario_id/:enlace_libro/listas
+router.get('/:usuario_id/:enlace_libro/listas', async (req, res) => {
+    const { usuario_id, enlace_libro } = req.params;
+
+    try {
+        const query = `
+            SELECT l.nombre AS nombre_lista, l.descripcion, l.publica, l.portada
+            FROM lista l
+            INNER JOIN libros_lista lb ON l.usuario_id = lb.usuario_id AND l.nombre = lb.nombre_lista
+            WHERE l.usuario_id = $1 AND lb.enlace_libro = $2;
+        `;
+
+        console.log('Ejecutando consulta SQL:', query);
+
+        const { rows } = await pool.query(query, [usuario_id, enlace_libro]);
+
+        if (rows.length === 0) {
+            return res.status(404).send('No se encontraron listas para el usuario y el libro especificados.');
+        }
+
+        res.json(rows);
+    } catch (error) {
+        console.error('Error al obtener las listas del usuario y el libro:', error);
+        res.status(500).send('Error interno del servidor');
+    }
+});
+
 module.exports = router;
