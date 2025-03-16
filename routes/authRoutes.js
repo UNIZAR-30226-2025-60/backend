@@ -11,7 +11,7 @@ const FRONTEND_URL = isLocal
 // Ruta para iniciar sesión con Google
 router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 
-// Ruta de redirección después de autenticación
+// Ruta de redirección después de autenticación en web
 router.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/" }),
@@ -30,6 +30,30 @@ router.get(
     }
     // Redirigir al frontend
     res.redirect(`${FRONTEND_URL}/inicio`);
+  }
+);
+
+// Ruta de redirección después de autenticación en móvil
+router.get(
+  "/google/callbackM",
+  passport.authenticate("google", { failureRedirect: "/" }),
+  (req, res) => {
+    console.log("✅ Usuario autenticado con Google:", req.user);
+    console.log("📌 Sesión actual:", req.session);
+
+    if (req.user) {
+      res.json({
+        usuario: {
+          id: req.user.id,
+          nombre: req.user.displayName,
+          correo: req.user.email, // Agregar el correo aquí
+          // foto: req.user.photos ? req.user.photos[0].value : null, // Foto de perfil si está disponible
+        },
+        sesion: req.session,
+      });
+    } else {
+      res.status(401).json({ error: "No se pudo autenticar al usuario" });
+    }
   }
 );
 
