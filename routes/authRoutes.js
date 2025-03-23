@@ -42,20 +42,22 @@ router.get(
     console.log("📌 Sesión actual:", req.session);
 
     if (req.user) {
-      res.json({
-        usuario: {
-          id: req.user.id,
-          nombre: req.user.displayName,
-          correo: req.user.email, // Agregar el correo aquí
-          // foto: req.user.photos ? req.user.photos[0].value : null, // Foto de perfil si está disponible
-        },
-        sesion: req.session,
-      });
-    } else {
-      res.status(401).json({ error: "No se pudo autenticar al usuario" });
+      const correo = req.user.email;
+      const nombre = req.user.displayName;
+      res.redirect(`bookly://login-success?correo=${encodeURIComponent(correo)}&nombre=${encodeURIComponent(nombre)}`);
     }
   }
 );
+
+// router.get("/googleM", (req, res, next) => {
+//   passport.authenticate("google", {
+//     scope: ["profile", "email"],
+//     callbackURL: isLocal 
+//       ? "http://10.1.65.185:3000/auth/google/callbackM"
+//       : "https://backend-dcy8.onrender.com/auth/google/callbackM",
+//   })(req, res, next);
+// });
+
 
 
 module.exports = router;
