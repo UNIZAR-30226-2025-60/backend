@@ -25,9 +25,6 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Verificar variable DATABASE_URL
-        run: echo "DATABASE_URL=$DATABASE_URL"
-        
       - name: Instalar dependencias
         run: npm install
 
