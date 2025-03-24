@@ -1,4 +1,4 @@
-name: ci-01
+name: Build Backend
 
 on:
   push:
