@@ -24,7 +24,7 @@ router.get('/favoritos/:usuario_id', async (req, res) => {
         console.log('Resultados obtenidos:', rows);
 
         if (rows.length === 0) {
-            return res.status(404).send('No se encontraron libros en la lista "Mis Favoritos".');
+            return res.status(404).json({ error: true, message: 'No se encontraron libros en la lista "Mis Favoritos".' });
         }
 
         res.json(rows);
