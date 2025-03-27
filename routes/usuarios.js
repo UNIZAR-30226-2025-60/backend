@@ -475,4 +475,95 @@ router.get('/fotos-perfil', async (req, res) => {
     }
   });
  
+
+
+
+
+
+
+
+
+
+  //RELATIVO A CHATBOT
+  async function getUserReadingBooks(userEmail) {
+    const result = await pool.query(`
+      SELECT libro.nombre, libro.autor, t.tematica
+      FROM libro
+      JOIN tema_asociado t ON t.enlace = libro.enlace
+      JOIN en_proceso ON en_proceso.libro_id = libro.enlace
+      WHERE en_proceso.usuario_id = $1
+    `, [userEmail]);
+  
+    return result.rows;
+  }
+  
+  async function getUserReadBooks(userEmail) {
+    const result = await pool.query(`
+      SELECT libro.nombre, libro.autor, t.tematica
+      FROM libro
+      JOIN tema_asociado t ON t.enlace = libro.enlace
+      JOIN leidos ON leidos.libro_id = libro.enlace
+      WHERE leidos.usuario_id = $1
+    `, [userEmail]);
+  
+    return result.rows;
+  }
+  
+  async function getUserFavoriteBooks(userEmail) {
+    const result = await pool.query(`
+      SELECT libro.nombre, libro.autor, t.tematica
+      FROM libro
+      JOIN tema_asociado t ON t.enlace = libro.enlace
+      JOIN libros_lista ON libros_lista.enlace_libro = libro.enlace
+      WHERE libros_lista.usuario_id = $1
+    `, [userEmail]);
+  
+    return result.rows;
+  }
+  
+  router.post('/recomendar', async (req, res) => {
+    const { userEmail, userMessage } = req.body;
+  
+    try {
+      // Obtener los libros en proceso, leídos y favoritos del usuario
+      const readingBooks = await getUserReadingBooks(userEmail);
+      const readBooks = await getUserReadBooks(userEmail);
+      const favoriteBooks = await getUserFavoriteBooks(userEmail);
+  
+      // Crear el contexto para Mistral
+      const readingContext = readingBooks.map(book => `${book.nombre} de ${book.autor} (${book.tema_asociado})`).join(', ');
+      const readContext = readBooks.map(book => `${book.nombre} de ${book.autor} (${book.tema_asociado})`).join(', ');
+      const favoriteContext = favoriteBooks.map(book => `${book.nombre} de ${book.autor} (${book.tema_asociado})`).join(', ');
+  
+      // Crear el mensaje completo para Mistral
+      const fullMessage = `
+        Usuario: ${userMessage}.
+        A CERCA DEL USUARIO:
+        SE ESTÁ LEYENDO: ${readingContext}.
+        SE HA LEÍDO: ${readContext}.
+        SUS FAVORITOS: ${favoriteContext}.
+        RESPONDE SABIENDO ESTO.
+        Además, su nombre es ${userEmail.split('@')[0]}. CONTESTA PERSONALIZADAMENTE.
+      `;
+  
+      // Enviar la consulta a la API de Mistral
+      const response = await axios.post('https://api.mistral.ai/v1/chat/completions', {
+        model: 'open-mixtral-8x22b',
+        messages: [{ role: 'user', content: fullMessage }],
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.VUE_APP_API_MISTRAL}`,  // Tu clave API de Mistral
+        },
+      });
+  
+      // Devolver la respuesta de Mistral al cliente
+      res.json({ response: response.data.choices[0].message.content });
+    } catch (error) {
+      console.error('Error al procesar la recomendación:', error);
+      res.status(500).send('Error al procesar la recomendación');
+    }
+  });
+  //AQUI ACABA LO RELATIVO A CHATBOT
+
 module.exports = router;
