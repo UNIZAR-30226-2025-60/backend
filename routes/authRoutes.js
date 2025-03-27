@@ -33,30 +33,30 @@ router.get(
   }
 );
 
-// Ruta de redirección después de autenticación en móvil
-router.get(
-  "/google/callbackM",
-  passport.authenticate("google", { failureRedirect: "/" }),
-  (req, res) => {
-    console.log("✅ Usuario autenticado con Google:", req.user);
-    console.log("📌 Sesión actual:", req.session);
+// // Ruta de redirección después de autenticación en móvil
+// router.get(
+//   "/google/callbackM",
+//   passport.authenticate("google", { failureRedirect: "/" }),
+//   (req, res) => {
+//     console.log("✅ Usuario autenticado con Google:", req.user);
+//     console.log("📌 Sesión actual:", req.session);
 
-    if (req.user) {
-      const correo = req.user.email;
-      const nombre = req.user.displayName;
-      res.redirect(`bookly://login-success?correo=${encodeURIComponent(correo)}&nombre=${encodeURIComponent(nombre)}`);
-    }
-  }
-);
+//     if (req.user) {
+//       const correo = req.user.email;
+//       const nombre = req.user.displayName;
+//       res.redirect(`bookly://login-success?correo=${encodeURIComponent(correo)}&nombre=${encodeURIComponent(nombre)}`);
+//     }
+//   }
+// );
 
-// router.get("/googleM", (req, res, next) => {
-//   passport.authenticate("google", {
-//     scope: ["profile", "email"],
-//     callbackURL: isLocal 
-//       ? "http://10.1.65.185:3000/auth/google/callbackM"
-//       : "https://backend-dcy8.onrender.com/auth/google/callbackM",
-//   })(req, res, next);
-// });
+// // router.get("/googleM", (req, res, next) => {
+// //   passport.authenticate("google", {
+// //     scope: ["profile", "email"],
+// //     callbackURL: isLocal 
+// //       ? "http://10.1.65.185:3000/auth/google/callbackM"
+// //       : "https://backend-dcy8.onrender.com/auth/google/callbackM",
+// //   })(req, res, next);
+// // });
 
 
 
