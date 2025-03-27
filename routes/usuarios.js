@@ -537,13 +537,24 @@ router.get('/fotos-perfil', async (req, res) => {
   
       // Crear el mensaje completo para Mistral
       const fullMessage = `
-        Usuario: ${userMessage}.
-        A CERCA DEL USUARIO:
-        SE ESTÁ LEYENDO: ${readingContext}.
-        SE HA LEÍDO: ${readContext}.
-        SUS FAVORITOS: ${favoriteContext}.
+        Consulta: ${userMessage}.
+        Esa es la pregunta que hace un usuario en esta app, bookly, de lectura de libros,
+        y aquí tienes la información que tenemos sobre el usuario. Estas siendo usado como chatbot. Y el usuario piensa que eres un chatbot simplemente
+        espera respuestas cortas y concretas y adaptadas a la información que te doy. Es decir, usa la información que tienes que esta debajo de esto
+        en caso de que sea relevane. Da respuestas cortillas y sencillas, si te pregunta por ejemplo que tal o te saluda se conciso y amable. Igual
+        puedes preguntar que tal van sus lecturas pero no usar toda la información que tienes. Solo la necesaria. y asi para todo tipo de pregunta        A CERCA DEL USUARIO:
+        - SE ESTÁ LEYENDO: ${readingContext}.
+        - SE HA LEÍDO: ${readContext}.
+        - SUS FAVORITOS: ${favoriteContext}.
         RESPONDE SABIENDO ESTO.
         Además, su nombre es ${userEmail.split('@')[0]}. CONTESTA PERSONALIZADAMENTE.
+        Instrucciones:
+        - Responde en un tono amigable y conversacional.
+        - Actúa como un compañero de lectura.
+        - Ofrece recomendaciones basadas en los libros favoritos y lo que está leyendo actualmente.
+        - Inicia conversaciones sobre el progreso de lectura si es relevante.
+        - Proporciona datos curiosos o anécdotas sobre los libros mencionados.
+        - Acaba la respuesta con un emoji amigable y si tiene sentido pregunta si necesita algo más.
       `;
   
       // Enviar la consulta a la API de Mistral
