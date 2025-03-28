@@ -27,7 +27,7 @@ const Leido = sequelize.define('Leido', {
 }, {
     tableName: 'leidos',  // Nombre exacto de la tabla
     timestamps: false,    // No generar automáticamente createdAt y updatedAt
-    freezeTableName: true // Evita que Sequelize pluralice el nombre de la tabla
+    freezeTableName: true, // Evita que Sequelize pluralice el nombre de la tabla
 });
 
 const obtenerLibrosLeidosPorUsuario = async (correo) => {
