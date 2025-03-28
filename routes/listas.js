@@ -23,8 +23,11 @@ router.get('/favoritos/:usuario_id', async (req, res) => {
         const { rows } = await pool.query(query, [usuario_id]);
         console.log('Resultados obtenidos:', rows);
 
+        // if (rows.length === 0) {
+        //     return res.status(404).json({ error: true, message: 'No se encontraron libros en la lista "Mis Favoritos".' });
+        // }
         if (rows.length === 0) {
-            return res.status(404).json({ error: true, message: 'No se encontraron libros en la lista "Mis Favoritos".' });
+            return res.json([]); // Respuesta con un array vacío
         }
 
         res.json(rows);

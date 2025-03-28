@@ -623,6 +623,12 @@ router.get('/fotos-perfil', async (req, res) => {
         - Inicia conversaciones sobre el progreso de lectura si es relevante.
         - Proporciona datos curiosos o anécdotas sobre los libros mencionados.
         - Acaba la respuesta con un emoji amigable y si tiene sentido pregunta si necesita algo más.
+        - Y RECUERDA, no uses la información que no es relevante para la pregunta del usuario. Es decir,
+        no uses toda la información que tienes. Solo la necesaria. Si no es algo relacionado con la información que tienes
+        se breve con tu respuesta y no uses la información que tienes, solo el nombre.
+        - Y si no puedes responder a la pregunta del usuario, simplemente di que no puedes ayudarle con eso.
+        - Y si no entiendes la pregunta del usuario, simplemente di que no entiendes la pregunta y que lo repita.
+
       `;
   
       // Enviar la consulta a la API de Mistral
