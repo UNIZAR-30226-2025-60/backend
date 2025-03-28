@@ -142,6 +142,45 @@ router.get('/leidos/:correo', async (req, res) => {
     }
 });
 
+// Ruta para añadir un libro de un usuario a leidos
+router.post('/leidos', async (req, res) => {
+    const { correo, enlace } = req.body;  // Ya no necesitamos el campo "fecha"
+
+    try {
+        const correoDec = decodeURIComponent(correo);
+        const enlaceDec = decodeURIComponent(enlace);
+
+        // 1. Verificar si el usuario existe
+        const usuarioExistente = await User.findOne({ where: { correoDec } });
+        if (!usuarioExistente) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+
+        // 2. Verificar si el libro existe
+        const libroExistente = await Libro.findOne({ where: { enlaceDec } });
+        if (!libroExistente) {
+            return res.status(404).json({ error: 'Libro no encontrado' });
+        }
+
+        // 3. Insertar el libro en la tabla "Leídos"
+        const query = 
+        `INSERT INTO "leidos" ("usuario_id", "libro_id", "fecha_fin_lectura")
+        VALUES ($1, $2, NOW())`;
+
+        await sequelize.query(query, {
+            replacements: [correoDec, enlaceDec],  // Reemplazamos los placeholders con los valores
+            type: sequelize.QueryTypes.INSERT
+        });
+
+        res.status(201).json({ message: 'Libro agregado a "Leídos" correctamente' });
+        
+    } catch (error) {
+        console.error('Error al agregar libro a "Leídos":', error);
+        res.status(500).json({ error: 'Error al agregar libro a "Leídos"' });
+    }
+});
+
+
 
 // Ruta para obtener los libros en proceso de un usuario
 router.get('/enproceso/:correo', async (req, res) => {
@@ -193,6 +232,41 @@ router.post('/enproceso', async (req, res) => {
         res.status(500).json({ error: 'Error al guardar libro en proceso' });
     }
 });
+
+
+// Ruta para eliminar un libro en proceso de un usuario
+router.delete('/enproceso', async (req, res) => {
+    const { correo, enlace } = req.body;
+
+    try {
+        const usuarioExistente = await User.findOne({ where: { correo } });
+        if (!usuarioExistente) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+
+        const libroExistente = await Libro.findOne({ where: { enlace } });
+        if (!libroExistente) {
+            return res.status(404).json({ error: 'Libro no encontrado' });
+        }
+
+        // Buscar si el libro está en proceso para este usuario
+        const libroEnProceso = await sequelize.query(
+            `DELETE FROM en_proceso WHERE usuario_id = :correo AND libro_id = :enlace`,
+            { replacements: { correo, enlace } }
+        );
+
+        if (libroEnProceso[1] === 0) {
+            return res.status(404).json({ error: 'El libro no estaba en proceso' });
+        }
+
+        res.status(200).json({ message: 'Libro eliminado del proceso correctamente' });
+    } catch (error) {
+        console.error('Error al eliminar libro en proceso:', error);
+        res.status(500).json({ error: 'Error al eliminar libro en proceso' });
+    }
+});
+
+
 
 // Ruta para obtener los libros dado su clave primaria enlace
 //Se le llama desde front asi:
