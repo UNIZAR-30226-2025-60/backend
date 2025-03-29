@@ -147,29 +147,27 @@ router.post('/leidos', async (req, res) => {
     const { correo, enlace } = req.body;  // Ya no necesitamos el campo "fecha"
 
     try {
-        const correoDec = decodeURIComponent(correo);
-        const enlaceDec = decodeURIComponent(enlace);
-
         // 1. Verificar si el usuario existe
-        const usuarioExistente = await User.findOne({ where: { correoDec } });
+        const usuarioExistente = await User.findOne({ where: { correo } });
         if (!usuarioExistente) {
             return res.status(404).json({ error: 'Usuario no encontrado' });
         }
 
         // 2. Verificar si el libro existe
-        const libroExistente = await Libro.findOne({ where: { enlaceDec } });
+        const libroExistente = await Libro.findOne({ where: { enlace } });
         if (!libroExistente) {
             return res.status(404).json({ error: 'Libro no encontrado' });
         }
 
-        // 3. Insertar el libro en la tabla "Leídos"
+        // 3. Insertar (o actualizar la fecha) el libro en la tabla "Leídos"
         const query = 
         `INSERT INTO "leidos" ("usuario_id", "libro_id", "fecha_fin_lectura")
         VALUES ($1, $2, NOW())`;
 
-        await sequelize.query(query, {
-            replacements: [correoDec, enlaceDec],  // Reemplazamos los placeholders con los valores
-            type: sequelize.QueryTypes.INSERT
+        await Leido.upsert({
+            usuario_id: correo,
+            libro_id: enlace,
+            fecha_fin_lectura: new Date()
         });
 
         res.status(201).json({ message: 'Libro agregado a "Leídos" correctamente' });
