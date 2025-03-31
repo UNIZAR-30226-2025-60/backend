@@ -446,7 +446,7 @@ router.delete('/:usuario_id/:nombre', async (req, res) => {
 
 // RUTA PARA OBTENER TODAS LAS LISTAS DADO UN USUARIO Y UN LIBRO
 // Probar:
-//   GET http://localhost:3000/api/listas/:usuario_id/:enlace_libro/listas
+//   GET http://localhost:3000/api/:usuario_id/:enlace_libro/listas
 router.get('/:usuario_id/:enlace_libro/listas', async (req, res) => {
     const { usuario_id, enlace_libro } = req.params;
 
@@ -472,5 +472,62 @@ router.get('/:usuario_id/:enlace_libro/listas', async (req, res) => {
         res.status(500).send('Error interno del servidor');
     }
 });
+
+
+
+// RUTA PARA OBTENER TODOS LOS LIBROS DADA UN NOMBRE DE UN USUARIO Y SU NOMBRE DE LA LISTA
+router.get('/:usuario_id/:nombre_lista/librosW', async (req, res) => {
+    const { usuario_id, nombre_lista } = req.params;
+
+    try {
+        const query = `
+            SELECT 
+                l.nombre AS nombre_lista,
+                l.descripcion,
+                l.publica,
+                l.portada,
+                lb.enlace_libro,
+                b.nombre AS nombre_libro,
+                b.imagen_portada
+            FROM 
+                lista l
+            INNER JOIN 
+                libros_lista lb 
+                ON l.usuario_id = lb.usuario_id AND l.nombre = lb.nombre_lista
+            LEFT JOIN 
+                libro b 
+                ON lb.enlace_libro = b.enlace
+            WHERE 
+                l.usuario_id = $1 AND l.nombre = $2;
+        `;
+        console.log('Ejecutando consulta SQL:', query);
+
+        const { rows } = await pool.query(query, [usuario_id, nombre_lista]);
+
+        if (rows.length === 0) {
+            return res.status(404).send('No se encontraron libros para la lista especificada.');
+        }
+
+        // Formatear la respuesta
+        const lista = {
+            nombre: rows[0].nombre_lista,
+            descripcion: rows[0].descripcion,
+            publica: rows[0].publica,
+            portada: rows[0].portada,
+            libros: rows.map(row => ({
+                enlace_libro: row.enlace_libro,
+                nombre: row.nombre_libro,
+                imagen_portada: row.imagen_portada || 'https://via.placeholder.com/150x225?text=Sin+Portada'
+            }))
+        };
+
+        res.json(lista);
+    } catch (error) {
+        console.error('Error al obtener los libros de la lista:', error);
+        res.status(500).send('Error interno del servidor');
+    }
+});
+
+
 
 module.exports = router;
