@@ -99,45 +99,59 @@ router.get("/usuario/esGoogle/:correo", async (req, res) => {
 
 // Ruta para registrar y dejar la sesión iniciado automáticamente de un nuevo usuario en el sistema
 router.post('/registro', async (req, res) => {
-    console.log('Datos recibidos en el backend:', req.body);
-    const { nombre, correo, contrasena } = req.body;
-    try {
-        // Encriptar la contraseña antes de guardarla
-        const saltRounds = 10;
-        const hashedPassword = await bcrypt.hash(contrasena, saltRounds);
+  console.log('Datos recibidos en el backend:', req.body);
+  const { nombre, correo, contrasena } = req.body;
+  try {
+      // Encriptar la contraseña antes de guardarla
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(contrasena, saltRounds);
 
-        const userResult = await pool.query(
-            'INSERT INTO USUARIO (nombre, correo, contrasena) VALUES ($1, $2, $3) RETURNING *',
-            [nombre, correo, hashedPassword]
-        );
-        const newUser = userResult.rows[0];
+      const userResult = await pool.query(
+          'INSERT INTO USUARIO (nombre, correo, contrasena) VALUES ($1, $2, $3) RETURNING *',
+          [nombre, correo, hashedPassword]
+      );
+      const newUser = userResult.rows[0];
 
-        const listaResult = await pool.query(
-            'INSERT INTO LISTA (nombre, usuario_id, publica, descripcion) VALUES ($1, $2, $3, $4) RETURNING *',
-            ['Mis Favoritos', newUser.correo, false, 'Tu lista personal de favoritos']
-        );
+      // Verificar si la lista "Mis Favoritos" ya existe para este usuario
+      const listaExistente = await pool.query(
+          'SELECT * FROM LISTA WHERE nombre = $1 AND usuario_id = $2',
+          ['Mis Favoritos', newUser.correo]
+      );
 
-        req.login(newUser, (err) => {
-            if (err) {
-                console.error('Error al iniciar sesión automáticamente:', err);
-                return res.status(500).send('Error al iniciar sesión');
-            }
-            console.log('Usuario autenticado:', newUser);
-            console.log('Sesión actual:', req.session);
-            req.session.save((err) => {
-                if (err) {
-                    console.error('Error al guardar sesión:', err);
-                    return res.status(500).send('Error al guardar sesión');
-                }
-                res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8081');
-                res.setHeader('Access-Control-Allow-Credentials', 'true');
-                res.status(201).json({ usuario: newUser, listaFavoritos: listaResult.rows[0] });
-            });
-        });
-    } catch (error) {
-        console.error('Error al registrar usuario y crear lista de favoritos:', error);
-        res.status(500).send('Error al registrar usuario: ' + error.message);
-    }
+      let listaFavoritos;
+      if (listaExistente.rows.length === 0) {
+          // Si no existe, creamos la lista
+          const listaResult = await pool.query(
+              'INSERT INTO LISTA (nombre, usuario_id, publica, descripcion) VALUES ($1, $2, $3, $4) RETURNING *',
+              ['Mis Favoritos', newUser.correo, false, 'Tu lista personal de favoritos']
+          );
+          listaFavoritos = listaResult.rows[0];
+      } else {
+          // Si ya existe, la utilizamos directamente
+          listaFavoritos = listaExistente.rows[0];
+      }
+
+      req.login(newUser, (err) => {
+          if (err) {
+              console.error('Error al iniciar sesión automáticamente:', err);
+              return res.status(500).send('Error al iniciar sesión');
+          }
+          console.log('Usuario autenticado:', newUser);
+          console.log('Sesión actual:', req.session);
+          req.session.save((err) => {
+              if (err) {
+                  console.error('Error al guardar sesión:', err);
+                  return res.status(500).send('Error al guardar sesión');
+              }
+              res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8081');
+              res.setHeader('Access-Control-Allow-Credentials', 'true');
+              res.status(201).json({ usuario: newUser, listaFavoritos });
+          });
+      });
+  } catch (error) {
+      console.error('Error al registrar usuario y crear lista de favoritos:', error);
+      res.status(500).send('Error al registrar usuario: ' + error.message);
+  }
 });
 
 
