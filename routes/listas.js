@@ -196,6 +196,32 @@ router.get('/:usuario_id/:nombre_lista/libros', async (req, res) => {
     }
 });
 
+// RUTA PARA OBTENER LOS ATRIBUTOS DE UNA LISTA PÚBLICA DADO SU NOMBRE
+// Probar: 
+//   GET http://localhost:3000/api/listas/publicas/:nombre
+router.get('/publicas/:nombre', async (req, res) => {
+    const { nombre } = req.params;
+
+    try {
+        const lista = await Lista.findOne({
+            where: {
+                nombre: nombre,
+                publica: true
+            },
+            attributes: ['nombre', 'descripcion', 'publica', 'portada'] 
+        });
+
+        if (!lista) {
+            return res.status(404).send('Lista no encontrada.');
+        }
+
+        res.json(lista);
+    } catch (error) {
+        console.error('Error al obtener los detalles de la lista:', error);
+        res.status(500).send('Error interno del servidor');
+    }
+});
+
 // RUTA PARA OBTENER LOS ATRIBUTOS DE UNA LISTA DADO EL NOMBRE DEL USUARIO Y SU NOMBRE DE LA LISTA
 // Probar: 
 //   GET http://localhost:3000/api/listas/:usuario_id/:nombre
