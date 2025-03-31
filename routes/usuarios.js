@@ -77,6 +77,26 @@ router.post("/usuario/cambiar-contrasena", async (req, res) => {
   }
 });
 
+router.get("/usuario/esGoogle/:correo", async (req, res) => {
+  const { correo } = req.params;
+  try {
+    const result = await pool.query(
+      "SELECT * FROM USUARIO WHERE correo = $1 AND contrasena IS NULL",
+      [correo]
+    );
+
+    if (result.rows.length > 0) {
+      return res.json({ esGoogle: true });
+    } else {
+      return res.json({ esGoogle: false });
+    }
+  } catch (error) {
+    console.error("Error al verificar si el usuario es de Google:", error);
+    res.status(500).json({ error: "Error en la verificación" });
+  }
+});
+
+
 // Ruta para registrar y dejar la sesión iniciado automáticamente de un nuevo usuario en el sistema
 router.post('/registro', async (req, res) => {
     console.log('Datos recibidos en el backend:', req.body);
