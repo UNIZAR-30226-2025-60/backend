@@ -144,39 +144,62 @@ router.get('/leidos/:correo', async (req, res) => {
 
 // Ruta para añadir un libro de un usuario a leidos
 router.post('/leidos', async (req, res) => {
-    const { correo, enlace } = req.body;  // Ya no necesitamos el campo "fecha"
-
+    const { correo, enlace } = req.body;
     try {
+        if (!correo || !enlace) {            
+            return res.status(400).json({ error: 'Correo o enlace no proporcionados correctamente' });
+        }
+
         // 1. Verificar si el usuario existe
-        const usuarioExistente = await User.findOne({ where: { correo } });
-        if (!usuarioExistente) {
+        const usuarioResult = await sequelize.query("SELECT * FROM usuario WHERE correo = :correo", { 
+            replacements: { correo } 
+        });
+        if (usuarioResult[0].length === 0) {
             return res.status(404).json({ error: 'Usuario no encontrado' });
         }
 
         // 2. Verificar si el libro existe
-        const libroExistente = await Libro.findOne({ where: { enlace } });
-        if (!libroExistente) {
+        const libroResult = await sequelize.query("SELECT * FROM libro WHERE enlace = :enlace", { 
+            replacements: { enlace } 
+        });
+        if (libroResult[0].length === 0) {
             return res.status(404).json({ error: 'Libro no encontrado' });
         }
 
-        // 3. Insertar (o actualizar la fecha) el libro en la tabla "Leídos"
-        const query = 
-        `INSERT INTO "leidos" ("usuario_id", "libro_id", "fecha_fin_lectura")
-        VALUES ($1, $2, NOW())`;
+        // 3. Insertar el libro en la tabla "leidos"
+        const insertQuery = `
+            INSERT INTO leidos (usuario_id, libro_id, fecha_fin_lectura)
+            VALUES (:correo, :enlace, NOW()) 
+            ON CONFLICT (usuario_id, libro_id) 
+            DO UPDATE SET fecha_fin_lectura = NOW();
+        `;
+        
+        await sequelize.query(insertQuery, { replacements: { correo, enlace } });
 
-        await Leido.upsert({
-            usuario_id: correo,
-            libro_id: enlace,
-            fecha_fin_lectura: new Date()
-        });
+         // 4. Insertar el libro en la tabla "libros_lista"
+         const insertLibrosListaQuery = `
+         INSERT INTO libros_lista (usuario_id, nombre_lista, enlace_libro)
+         VALUES (:correo, 'Leídos', :enlace);
+         `;
+     
+         await sequelize.query(insertLibrosListaQuery, { replacements: { correo, enlace } });
 
-        res.status(201).json({ message: 'Libro agregado a "Leídos" correctamente' });
+        // 5. Eliminar el libro de la tabla "en_proceso"
+        const deleteQuery = `
+            DELETE FROM en_proceso 
+            WHERE usuario_id = :correo AND libro_id = :enlace;
+        `;
+        
+        await sequelize.query(deleteQuery, { replacements: { correo, enlace } });
+
+        res.status(201).json({ message: 'Libro agregado a "Leídos" y "libros_lista" y eliminado de "En Proceso" correctamente' });
         
     } catch (error) {
-        console.error('Error al agregar libro a "Leídos":', error);
-        res.status(500).json({ error: 'Error al agregar libro a "Leídos"' });
+        console.error('❌ Error al agregar libro a "Leídos" o eliminarlo de "En Proceso":', error);
+        res.status(500).json({ error: `Error al agregar libro a "Leídos": ${error.message}` });
     }
 });
+
 
 
 

@@ -11,9 +11,9 @@ router.get('/top3', async (req, res) => {
     try {
         const usuariosTop3 = await obtenerTop3UsuariosDelMes();
 
-        if (usuariosTop3.length === 0) {
-            return res.status(404).send('No se encontraron usuarios que hayan leído libros este mes.');
-        }
+        // if (usuariosTop3.length === 0) {
+        //     return res.status(404).send('No se encontraron usuarios que hayan leído libros este mes.');
+        // }
 
         res.json(usuariosTop3);
 
@@ -32,9 +32,9 @@ router.get('/top3anuales', async (req, res) => {
 
         const usuariosTop3Anuales = await obtenerTop3UsuariosDelAnio(currentYear);
 
-        if (usuariosTop3Anuales.length === 0) {
-            return res.status(404).send('No se encontraron usuarios que hayan leído libros este año.');
-        }
+        // if (usuariosTop3Anuales.length === 0) {
+        //     return res.status(404).send('No se encontraron usuarios que hayan leído libros este año.');
+        // }
 
         res.json(usuariosTop3Anuales);
 
@@ -56,9 +56,9 @@ router.get('/top5libros/:year', async (req, res) => {
         
         const librosTop5Anio = await obtenerTop5LibrosDelAnio(year);
         
-        if (librosTop5Anio.length === 0) {
-            return res.status(404).send('No se encontraron libros leídos en este año.');
-        }
+        // if (librosTop5Anio.length === 0) {
+        //     return res.status(404).send('No se encontraron libros leídos en este año.');
+        // }
 
         res.json(librosTop5Anio);
 
@@ -80,9 +80,9 @@ router.get('/top5libros/:month/:year', async (req, res) => {
         
         const librosTop5 = await obtenerTop5LibrosDelMesYAnio(month, year);
         
-        if (librosTop5.length === 0) {
-            return res.status(404).send('No se encontraron libros leídos en este mes y año.');
-        }
+        // if (librosTop5.length === 0) {
+        //     return res.status(404).send('No se encontraron libros leídos en este mes y año.');
+        // }
 
         res.json(librosTop5);
 
@@ -101,9 +101,9 @@ router.get('/generales/:correo', async (req, res) => {
     try {
         const estadisticasGenerales = await obtenerEstadisticasGeneralesPorUsuario(correo);
 
-        if (!estadisticasGenerales) {
-            return res.status(404).send('No se encontraron estadísticas para este usuario.');
-        }
+        // if (!estadisticasGenerales) {
+        //     return res.status(404).send('No se encontraron estadísticas para este usuario.');
+        // }
 
         res.json(estadisticasGenerales);
 
@@ -123,9 +123,9 @@ router.get('/librosrecomendados/:correo', async (req, res) => {
     try {
         const librosRecomendados = await obtenerLibrosRecomendadosSegunTematicas(correo);
 
-        if (librosRecomendados.length === 0) {
-            return res.status(404).send('No se encontraron libros recomendados.');
-        }
+        // if (librosRecomendados.length === 0) {
+        //     return res.status(404).send('No se encontraron libros recomendados.');
+        // }
 
         res.json(librosRecomendados);
 
