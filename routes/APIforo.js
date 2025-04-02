@@ -1,7 +1,15 @@
 const express = require("express");
 const router = express.Router();
 
-const { agregarRespuesta , obtenerRespuestasPorPregunta , obtenerPreguntas, obtenerPreguntasPorUsuario, obtenerForoCompleto, agregarPregunta } = require('../models/foro');
+const { 
+  agregarRespuesta, 
+  obtenerRespuestasPorPregunta, 
+  obtenerPreguntas, 
+  obtenerPreguntasPorUsuario, 
+  obtenerForoCompleto, 
+  agregarPregunta, 
+  obtenerNumeroRespuestasPorPregunta
+} = require('../models/foro');
 
 // Ruta para obtener el foro completo
 router.get('/obtenerForoCompleto', async (req, res) => {
@@ -67,5 +75,19 @@ router.post('/agregarRespuesta', async (req, res) => {
     res.status(500).json({ error: 'Error al agregar respuesta', detalle: error.message });
   }
 });
+
+// Ruta para obtener el número de respuestas de una pregunta
+router.get('/obtenerNumeroRespuestas', async (req, res) => {
+  const { preguntaId } = req.query;
+  try {
+    const numRespuestas = await obtenerNumeroRespuestasPorPregunta(preguntaId);
+    res.status(200).json({ numRespuestas });
+  } catch (error) {
+    console.error('Error al obtener el número de respuestas:', error);
+    res.status(500).json({ error: 'Error al obtener el número de respuestas' });
+  }
+});
+
+
 
 module.exports = router;

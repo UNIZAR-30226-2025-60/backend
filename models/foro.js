@@ -115,5 +115,21 @@ const agregarRespuesta = async (preguntaId, usuarioCorreo, mensaje) => {
   }
 };
 
+// Funcion para obtener el número de respuestas de una pregunta
+const obtenerNumeroRespuestasPorPregunta = async (preguntaId) => {
+  const query = `
+    SELECT COUNT(*) AS num_respuestas
+    FROM respuesta
+    WHERE pregunta_id = $1;
+  `;
+  try {
+    const { rows } = await pool.query(query, [preguntaId]);
+    return rows[0].num_respuestas; // Devuelve solo el número de respuestas
+  } catch (error) {
+    console.error('Error al obtener número de respuestas:', error);
+    throw error;
+  }
+};
 
-module.exports = { agregarRespuesta , obtenerRespuestasPorPregunta , obtenerPreguntas, obtenerPreguntasPorUsuario, obtenerForoCompleto, agregarPregunta };
+
+module.exports = { agregarRespuesta , obtenerRespuestasPorPregunta , obtenerPreguntas, obtenerPreguntasPorUsuario, obtenerForoCompleto, agregarPregunta, obtenerNumeroRespuestasPorPregunta };
