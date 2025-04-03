@@ -424,6 +424,15 @@ router.get('/ultima-pagina', async (req, res) => {
       console.log("📌 Página encontrada en BD:", result.rows[0].pagina);
     } else {
       console.warn("⚠️ No se encontró progreso guardado, devolviendo 1.");
+        // Insertar el libro en la lista "En proceso" si no existe progreso guardado
+        await pool.query(
+          `INSERT INTO libros_lista (usuario_id, enlace_libro, nombre_lista)
+           VALUES ($1, $2, $3)
+           ON CONFLICT (usuario_id, enlace_libro, nombre_lista) DO NOTHING;`,
+          [decodedCorreo, libroIdNeon, "En proceso"]
+      );
+
+      console.log("📚 Libro añadido automáticamente a la lista 'En proceso'.");
     }
 
     res.json({ pagina: result.rows[0]?.pagina || 1 });
