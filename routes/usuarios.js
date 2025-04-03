@@ -326,7 +326,25 @@ router.post('/usuario/cambiar-nombre', async (req, res) => {
   }
 });
 
+// Cambiar la imagen de perfil de un usuario
+router.post('/usuario/cambiar-foto', async (req, res) => {
+  const { correo, foto_perfil } = req.body;
+  try {
+    const result = await pool.query(
+      'UPDATE USUARIO SET foto_perfil = $1 WHERE correo = $2 RETURNING *',
+      [foto_perfil, correo]
+    );
 
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error("Error al cambiar la imagen de perfil:", error);
+    res.status(500).json({ error: "Error al cambiar la imagen de perfil" });
+  }
+});
 
 // Guardar la última página leída automáticamente
 router.post('/guardar-pagina', async (req, res) => {
