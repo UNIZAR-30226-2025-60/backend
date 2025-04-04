@@ -500,7 +500,25 @@ router.get('/:usuario_id/:enlace_libro/listas', async (req, res) => {
 });
 
 
-
+// RUTA PARA OBTENER LOS LIBROS DE UNA LISTA PÚBLICA ESPECÍFICA
+// Probar: 
+//   GET http://localhost:3000/api/listas/publicas/:nombre/librosP
+router.get('/publicas/:nombre/librosP', async (req, res) => {
+    const { nombre } = req.params;
+    try {
+        const query = `
+            SELECT lb.enlace_libro
+            FROM libros_lista lb
+            INNER JOIN lista l ON lb.usuario_id = l.usuario_id AND lb.nombre_lista = l.nombre
+            WHERE l.nombre = $1 AND l.publica = true;
+        `;
+        const { rows } = await pool.query(query, [nombre]);
+        res.json(rows);
+    } catch (error) {
+        console.error('Error al obtener los libros de la lista pública:', error);
+        res.status(500).send('Error interno del servidor');
+    }
+});
 
 
 
