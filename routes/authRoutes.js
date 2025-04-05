@@ -9,9 +9,33 @@ const FRONTEND_URL = isLocal
   : "https://booklyweb-469w.onrender.com";
 
 // Ruta para iniciar sesión con Google
+/**
+ * @swagger
+ * /auth/google:
+ *   get:
+ *     summary: Iniciar sesión con Google
+ *     description: Redirige a la autenticación de Google para iniciar sesión en la aplicación.
+ *     responses:
+ *       302:
+ *         description: Redirige a Google para la autenticación
+ *       500:
+ *         description: Error al redirigir a la autenticación de Google
+ */
 router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 
 // Ruta de redirección después de autenticación en web
+/**
+ * @swagger
+ * /auth/google/callback:
+ *   get:
+ *     summary: Callback de Google después de la autenticación
+ *     description: Redirige al frontend después de que el usuario haya autenticado su cuenta de Google. Guarda el correo en la cookie y redirige.
+ *     responses:
+ *       302:
+ *         description: Redirige al frontend con la cookie de sesión
+ *       500:
+ *         description: Error al procesar la autenticación de Google
+ */
 router.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/" }),
