@@ -3,6 +3,32 @@ const express = require('express');
 const axios = require('axios');
 const router = express.Router();
 
+/**
+     * @swagger
+     * /api/proxy-pdf:
+     *   get:
+     *     summary: Descargar un PDF desde Google Drive a través del servidor
+     *     description: Recibe una URL de Google Drive y redirige la descarga del archivo PDF a través del servidor.
+     *     parameters:
+     *       - in: query
+     *         name: url
+     *         required: true
+     *         description: URL de Google Drive que contiene el archivo PDF
+     *         schema:
+     *           type: string
+     *     responses:
+     *       200:
+     *         description: PDF descargado correctamente
+     *         content:
+     *           application/pdf:
+     *             schema:
+     *               type: string
+     *               format: binary
+     *       400:
+     *         description: URL inválida o no es de Google Drive
+     *       500:
+     *         description: Error al descargar el PDF
+     */
 router.get('/proxy-pdf', async (req, res) => {
   try {
     const driveUrl = decodeURIComponent(req.query.url);
