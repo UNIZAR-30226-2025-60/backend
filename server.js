@@ -6,6 +6,8 @@ const { Strategy: GoogleStrategy } = require("passport-google-oauth20");
 require("dotenv").config();
 const fs = require('fs');
 const path = require('path');
+const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
 
 const { sequelize, pool } = require("./db/db");
 const { User } = require("./models/User");  
