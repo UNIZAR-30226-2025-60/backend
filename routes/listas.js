@@ -6,6 +6,34 @@ const { pool } = require('../db/db');
 // RUTA PARA OBTENER LOS LIBROS DE "MIS FAVORITOS" DADO UN USUARIO
 // Probar: 
 //  GET http://localhost:3000/api/listas/favoritos/:usuario_id
+
+/**
+ * @swagger
+ * /api/listas/favoritos/{usuario_id}:
+ *   get:
+ *     summary: Obtener los libros de "Mis Favoritos" de un usuario
+ *     description: Devuelve todos los libros de la lista "Mis Favoritos" de un usuario específico.
+ *     parameters:
+ *       - in: path
+ *         name: usuario_id
+ *         required: true
+ *         description: Correo o ID del usuario
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Lista de libros favoritos del usuario
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *       404:
+ *         description: No se encontraron libros en la lista "Mis Favoritos"
+ *       500:
+ *         description: Error al obtener los libros favoritos
+ */
 router.get('/favoritos/:usuario_id', async (req, res) => {
     const usuario_id = req.params.usuario_id;
 
@@ -40,6 +68,28 @@ router.get('/favoritos/:usuario_id', async (req, res) => {
 // RUTA PARA OBTENER TODAS LAS PORTADAS DE LIBROS Y SUS TEMÁTICAS
 // Probar:
 //      GET http://localhost:3000/api/listas/portadas-temas
+
+/**
+ * @swagger
+ * /api/listas/portadas-temas:
+ *   get:
+ *     summary: Obtener todas las portadas de libros y sus temáticas
+ *     description: Devuelve las URLs de todas las portadas de libros almacenadas en la base de datos.
+ *     responses:
+ *       200:
+ *         description: Lista de imágenes de portadas de libros
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   foto:
+ *                     type: string
+ *       500:
+ *         description: Error al obtener las portadas de libros
+ */
 router.get('/portadas-temas', async (req, res) => {
     try {
       const query = `
@@ -64,6 +114,34 @@ router.get('/portadas-temas', async (req, res) => {
     //     "usuario_id": "el correo de un usuario",
     //     "enlace_libro": "https://...enlace_libro"
     //  }
+
+ /**
+ * @swagger
+ * /api/listas/favoritos:
+ *   post:
+ *     summary: Añadir un libro a "Mis Favoritos"
+ *     description: Permite a un usuario añadir un libro a su lista de "Mis Favoritos".
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               usuario_id:
+ *                 type: string
+ *               enlace_libro:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Libro añadido correctamente a la lista "Mis Favoritos"
+ *       400:
+ *         description: Faltan parámetros requeridos o libro no existe
+ *       409:
+ *         description: El libro ya está en la lista "Mis Favoritos"
+ *       500:
+ *         description: Error al añadir el libro a "Mis Favoritos"
+ */
 router.post('/favoritos', async (req, res) => {
     const { usuario_id, enlace_libro } = req.body;
 
@@ -101,6 +179,27 @@ router.post('/favoritos', async (req, res) => {
 // RUTA PARA OBTENER TODAS LAS LISTAS PÚBLICAS
 // Probar: 
 //   GET http://localhost:3000/api/listas/publicas
+
+/**
+ * @swagger
+ * /api/listas/publicas:
+ *   get:
+ *     summary: Obtener todas las listas públicas
+ *     description: Devuelve todas las listas que son públicas.
+ *     responses:
+ *       200:
+ *         description: Lista de listas públicas
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *       404:
+ *         description: No se encontraron listas públicas
+ *       500:
+ *         description: Error al obtener las listas públicas
+ */
 router.get('/publicas', async (req, res) => {
     try {
         const listasPublicas = await Lista.findAll({
@@ -128,6 +227,34 @@ router.get('/publicas', async (req, res) => {
     //     "usuario_id": "el correo de un usuario",
     //     "enlace_libro": "https://...enlace_libro"
     //  }
+
+/**
+ * @swagger
+ * /api/listas/favoritos:
+ *   delete:
+ *     summary: Eliminar un libro de "Mis Favoritos"
+ *     description: Permite a un usuario eliminar un libro de su lista "Mis Favoritos".
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               usuario_id:
+ *                 type: string
+ *               enlace_libro:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Libro eliminado correctamente de "Mis Favoritos"
+ *       400:
+ *         description: Faltan parámetros requeridos o el libro no existe
+ *       404:
+ *         description: El libro no se encuentra en la lista "Mis Favoritos"
+ *       500:
+ *         description: Error al eliminar el libro de "Mis Favoritos"
+ */
 router.delete('/favoritos', async (req, res) => {
     const { usuario_id, enlace_libro } = req.body;
 
@@ -166,6 +293,38 @@ router.delete('/favoritos', async (req, res) => {
 // RUTA PARA OBTENER TODOS LOS LIBROS DADA UN NOMBRE DE UN USUARIO Y SU NOMBRE DE LA LISTA
 // Probar: 
 //   GET http://localhost:3000/api/listas/:usuario_id/:nombre_lista/libros
+
+/**
+ * @swagger
+ * /api/listas/{usuario_id}/{nombre_lista}/libros:
+ *   get:
+ *     summary: Obtener todos los libros de una lista de un usuario
+ *     description: Obtiene todos los libros de una lista específica de un usuario dado el nombre de la lista y el usuario_id.
+ *     parameters:
+ *       - in: path
+ *         name: usuario_id
+ *         required: true
+ *         description: ID o correo del usuario
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: nombre_lista
+ *         required: true
+ *         description: Nombre de la lista de libros
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Lista de libros obtenidos de la lista especificada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *       500:
+ *         description: Error interno del servidor
+ */
 router.get('/:usuario_id/:nombre_lista/libros', async (req, res) => {
     const { usuario_id, nombre_lista } = req.params;
 
@@ -185,9 +344,9 @@ router.get('/:usuario_id/:nombre_lista/libros', async (req, res) => {
 
         const { rows } = await pool.query(query, [usuario_id, nombre_lista]);
 
-        if (rows.length === 0) {
-            return res.status(404).send('No se encontraron libros para la lista especificada.');
-        }
+        // if (rows.length === 0) {
+        //     return res.status(404).send('No se encontraron libros para la lista especificada.');
+        // }
 
         res.json(rows); 
     } catch (error) {
@@ -199,6 +358,44 @@ router.get('/:usuario_id/:nombre_lista/libros', async (req, res) => {
 // RUTA PARA OBTENER LOS ATRIBUTOS DE UNA LISTA PÚBLICA DADO SU NOMBRE
 // Probar: 
 //   GET http://localhost:3000/api/listas/publicas/:nombre
+/**
+ * @swagger
+ * /api/listas/publicas/{nombre}:
+ *   get:
+ *     summary: Obtener los atributos de una lista pública dada su nombre
+ *     description: Obtiene los detalles de una lista pública, como el nombre, descripción, visibilidad pública y portada, utilizando el nombre de la lista.
+ *     parameters:
+ *       - in: path
+ *         name: nombre
+ *         required: true
+ *         description: El nombre de la lista pública que se desea obtener
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Detalles de la lista pública encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 nombre:
+ *                   type: string
+ *                   description: El nombre de la lista
+ *                 descripcion:
+ *                   type: string
+ *                   description: Descripción de la lista
+ *                 publica:
+ *                   type: boolean
+ *                   description: Indica si la lista es pública
+ *                 portada:
+ *                   type: string
+ *                   description: URL de la portada de la lista
+ *       404:
+ *         description: Lista no encontrada
+ *       500:
+ *         description: Error al obtener los detalles de la lista
+ */
 router.get('/publicas/:nombre', async (req, res) => {
     const { nombre } = req.params;
 
@@ -225,6 +422,47 @@ router.get('/publicas/:nombre', async (req, res) => {
 // RUTA PARA OBTENER LOS ATRIBUTOS DE UNA LISTA DADO EL NOMBRE DEL USUARIO Y SU NOMBRE DE LA LISTA
 // Probar: 
 //   GET http://localhost:3000/api/listas/:usuario_id/:nombre
+
+/**
+ * @swagger
+ * /api/listas/{usuario_id}/{nombre}:
+ *   get:
+ *     summary: Obtener los atributos de una lista de un usuario
+ *     description: Obtiene los detalles de una lista de un usuario, como su nombre, descripción, estado de privacidad y portada.
+ *     parameters:
+ *       - in: path
+ *         name: usuario_id
+ *         required: true
+ *         description: ID o correo del usuario
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: nombre
+ *         required: true
+ *         description: Nombre de la lista
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Detalles de la lista
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 nombre:
+ *                   type: string
+ *                 descripcion:
+ *                   type: string
+ *                 publica:
+ *                   type: boolean
+ *                 portada:
+ *                   type: string
+ *       404:
+ *         description: Lista no encontrada
+ *       500:
+ *         description: Error interno del servidor
+ */
 router.get('/:usuario_id/:nombre', async (req, res) => {
     const { usuario_id, nombre } = req.params;
 
@@ -252,6 +490,34 @@ router.get('/:usuario_id/:nombre', async (req, res) => {
 // RUTA PARA OBTENER TODAS LAS LISTAS DADO UN USUARIO
 // Probar: 
 //   GET http://localhost:3000/api/listas/:usuario_id
+
+/**
+ * @swagger
+ * /api/listas/{usuario_id}:
+ *   get:
+ *     summary: Obtener todas las listas de un usuario
+ *     description: Obtiene todas las listas asociadas a un usuario dado su ID o correo.
+ *     parameters:
+ *       - in: path
+ *         name: usuario_id
+ *         required: true
+ *         description: ID o correo del usuario
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Lista de todas las listas del usuario
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *       404:
+ *         description: No se encontraron listas para el usuario
+ *       500:
+ *         description: Error al obtener las listas
+ */
 router.get('/:usuario_id', async (req, res) => {
     try {
         const usuario_id = req.params.usuario_id;
@@ -285,6 +551,50 @@ router.get('/:usuario_id', async (req, res) => {
     //  }
     // OJO, al ser modificar, puedes poner los atributos que te de
     // la gana para modificar, como si pones solo uno.
+/**
+ * @swagger
+ * /api/listas/{usuario_id}/{nombre}:
+ *   patch:
+ *     summary: Actualizar los atributos de una lista
+ *     description: Actualiza los atributos de una lista específica de un usuario, como descripción, visibilidad, portada, y nombre.
+ *     parameters:
+ *       - in: path
+ *         name: usuario_id
+ *         required: true
+ *         description: ID o correo del usuario
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: nombre
+ *         required: true
+ *         description: Nombre de la lista que se desea actualizar
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               descripcion:
+ *                 type: string
+ *               publica:
+ *                 type: boolean
+ *               portada:
+ *                 type: string
+ *               nuevoNombre:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Lista actualizada correctamente
+ *       400:
+ *         description: No se proporcionaron campos para actualizar
+ *       404:
+ *         description: Lista no encontrada
+ *       500:
+ *         description: Error al actualizar la lista
+ */
     router.patch('/:usuario_id/:nombre', async (req, res) => {
         const { usuario_id, nombre } = req.params;
         const { descripcion, publica, portada, nuevoNombre } = req.body;
@@ -334,6 +644,40 @@ router.get('/:usuario_id', async (req, res) => {
 //       "usuario_id": "el correo de un usuario",
 //       "libro_id": "https://...enlace_libro"
 //     }
+/**
+ * @swagger
+ * /api/listas/{nombreLista}:
+ *   post:
+ *     summary: Añadir un libro a una lista de un usuario
+ *     description: Permite a un usuario añadir un libro a una lista especificada por el nombre de la lista.
+ *     parameters:
+ *       - in: path
+ *         name: nombreLista
+ *         required: true
+ *         description: Nombre de la lista a la que se desea añadir el libro
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               usuario_id:
+ *                 type: string
+ *               libro_id:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Libro añadido correctamente a la lista
+ *       400:
+ *         description: Faltan parámetros requeridos
+ *       409:
+ *         description: El libro ya está en la lista
+ *       500:
+ *         description: Error interno del servidor
+ */
 router.post('/:nombreLista', async (req, res) => {
     const { usuario_id, libro_id } = req.body;
     const { nombreLista } = req.params;
@@ -376,6 +720,40 @@ router.post('/:nombreLista', async (req, res) => {
 //       "usuario_id": "el correo de un usuario",
 //       "libro_id": "https://...enlace_libro"
 //     }
+/**
+ * @swagger
+ * /api/listas/{nombreLista}:
+ *   delete:
+ *     summary: Eliminar un libro de una lista
+ *     description: Permite a un usuario eliminar un libro de una lista específica. Se debe proporcionar el usuario_id, libro_id y nombre de la lista.
+ *     parameters:
+ *       - in: path
+ *         name: nombreLista
+ *         required: true
+ *         description: Nombre de la lista de donde se eliminará el libro
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               usuario_id:
+ *                 type: string
+ *               libro_id:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Libro eliminado correctamente de la lista
+ *       400:
+ *         description: Faltan parámetros requeridos o el libro no existe
+ *       404:
+ *         description: El libro no se encuentra en la lista
+ *       500:
+ *         description: Error interno del servidor
+ */
 router.delete('/:nombreLista', async (req, res) => {
     const { usuario_id, libro_id } = req.body;
     const { nombreLista } = req.params;
@@ -424,6 +802,35 @@ router.delete('/:nombreLista', async (req, res) => {
     //     "publica": true,
     //     "portada": "https:..."
     // }
+/**
+ * @swagger
+ * /api/listas:
+ *   post:
+ *     summary: Crear una nueva lista
+ *     description: Crea una nueva lista para un usuario con la información proporcionada.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nombre:
+ *                 type: string
+ *               usuario_id:
+ *                 type: string
+ *               descripcion:
+ *                 type: string
+ *               publica:
+ *                 type: boolean
+ *               portada:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Lista creada correctamente
+ *       500:
+ *         description: Error al crear la lista
+ */
 router.post('/', async (req, res) => {
     try {
         const { nombre, usuario_id, descripcion, publica, portada } = req.body;
@@ -446,6 +853,35 @@ router.post('/', async (req, res) => {
 // RUTA PARA ELIMINAR UNA LISTA
 // Probar: 
 //   DELETE http://localhost:3000/api/listas/:usuario_id/:nombre
+/**
+ * @swagger
+ * /api/listas/{usuario_id}/{nombre}:
+ *   delete:
+ *     summary: Eliminar una lista de un usuario
+ *     description: Permite eliminar una lista de un usuario específico. No se puede eliminar la lista "Mis Favoritos".
+ *     parameters:
+ *       - in: path
+ *         name: usuario_id
+ *         required: true
+ *         description: ID del usuario que posee la lista
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: nombre
+ *         required: true
+ *         description: Nombre de la lista que se desea eliminar
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Lista eliminada correctamente
+ *       400:
+ *         description: No se puede eliminar la lista "Mis Favoritos"
+ *       404:
+ *         description: Lista no encontrada
+ *       500:
+ *         description: Error interno del servidor
+ */
 router.delete('/:usuario_id/:nombre', async (req, res) => {
     try {
         const { usuario_id, nombre } = req.params;
@@ -473,6 +909,40 @@ router.delete('/:usuario_id/:nombre', async (req, res) => {
 // RUTA PARA OBTENER TODAS LAS LISTAS DADO UN USUARIO Y UN LIBRO
 // Probar:
 //   GET http://localhost:3000/api/:usuario_id/:enlace_libro/listas
+
+/**
+ * @swagger
+ * /api/listas/{usuario_id}/{enlace_libro}/listas:
+ *   get:
+ *     summary: Obtener todas las listas de un usuario para un libro específico
+ *     description: Obtiene todas las listas en las que un usuario ha agregado un libro específico.
+ *     parameters:
+ *       - in: path
+ *         name: usuario_id
+ *         required: true
+ *         description: ID o correo del usuario
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: enlace_libro
+ *         required: true
+ *         description: Enlace único del libro
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Lista de listas donde el libro está presente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *       404:
+ *         description: No se encontraron listas para el usuario y el libro
+ *       500:
+ *         description: Error al obtener las listas
+ */
 router.get('/:usuario_id/:enlace_libro/listas', async (req, res) => {
     const { usuario_id, enlace_libro } = req.params;
 
@@ -503,6 +973,36 @@ router.get('/:usuario_id/:enlace_libro/listas', async (req, res) => {
 // RUTA PARA OBTENER LOS LIBROS DE UNA LISTA PÚBLICA ESPECÍFICA
 // Probar: 
 //   GET http://localhost:3000/api/listas/publicas/:nombre/librosP
+/**
+ * @swagger
+ * /api/listas/publicas/{nombre}/librosP:
+ *   get:
+ *     summary: Obtener los libros de una lista pública dada su nombre
+ *     description: Obtiene los enlaces de los libros que están en una lista pública, dado su nombre.
+ *     parameters:
+ *       - in: path
+ *         name: nombre
+ *         required: true
+ *         description: El nombre de la lista pública de la cual se desea obtener los libros.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Lista de libros de la lista pública
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   enlace_libro:
+ *                     type: string
+ *                     description: Enlace del libro en la lista pública
+ *       500:
+ *         description: Error al obtener los libros de la lista pública
+ */
+
 router.get('/publicas/:nombre/librosP', async (req, res) => {
     const { nombre } = req.params;
     try {
