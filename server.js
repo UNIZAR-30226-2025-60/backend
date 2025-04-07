@@ -135,7 +135,7 @@ app.use(
       // secure: false,
       // sameSite: "lax",
       secure: process.env.NODE_ENV === "production", // true en producción
-      sameSite: process.env.NODE_ENV === "production" ? "None" : "lax",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     },
   })
 );
