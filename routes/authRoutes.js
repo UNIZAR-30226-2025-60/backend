@@ -55,9 +55,9 @@ router.get(
     if (req.user) {
       res.cookie("userEmail", req.user.correo, {
         httpOnly: false, // Necesario para acceder desde el frontend
-        secure: !isLocal,
-        sameSite: isLocal ? "none" : "lax",
-        domain: isLocal ? undefined : "booklyweb-469w.onrender.com", // <-- AÑADIDO
+        secure: process.env.NODE_ENV === "production", // En producción, debe ser seguro
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Configuración SameSite
+        domain: isLocal ? undefined : "booklyweb-469w.onrender.com",  // Dominio en producción
         maxAge: 24 * 60 * 60 * 1000, // 1 día de duración
       });
     }

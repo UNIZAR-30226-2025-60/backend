@@ -1043,28 +1043,31 @@ router.get('/fotos-perfil', async (req, res) => {
     ? "http://localhost:8081"
     : "https://booklyweb-469w.onrender.com";
   
-
-  router.get("/logout", (req, res) => {
-    res.clearCookie("connect.sid", {
-      path: "/",
-      domain: isLocal ? undefined : "booklyweb-469w.onrender.com",
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    });
-    res.clearCookie("userEmail", {
-      path: "/",
-      domain: isLocal ? undefined : "booklyweb-469w.onrender.com",
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    });
-    res.clearCookie("isGoogleAuth", {
-      path: "/",
-      domain: isLocal ? undefined : "booklyweb-469w.onrender.com",
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    });
-    res.send("Sesión cerrada correctamente.");
+// Ruta para cerrar sesión y eliminar cookies
+router.get("/logout", (req, res) => {
+  // Eliminar cookies
+  res.clearCookie("connect.sid", {
+    path: "/",
+    domain: isLocal ? undefined : "booklyweb-469w.onrender.com",  // Dominio en producción
+    secure: process.env.NODE_ENV === "production", // Asegúrate de que sea seguro en producción
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Configuración SameSite
   });
+  res.clearCookie("userEmail", {
+    path: "/",
+    domain: isLocal ? undefined : "booklyweb-469w.onrender.com",  // Dominio en producción
+    secure: process.env.NODE_ENV === "production", // Asegúrate de que sea seguro en producción
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Configuración SameSite
+  });
+  res.clearCookie("isGoogleAuth", {
+    path: "/",
+    domain: isLocal ? undefined : "booklyweb-469w.onrender.com",  // Dominio en producción
+    secure: process.env.NODE_ENV === "production", // Asegúrate de que sea seguro en producción
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Configuración SameSite
+  });
+  
+  // Responder con un mensaje de sesión cerrada
+  res.send("Sesión cerrada correctamente.");
+});
 
 
 
