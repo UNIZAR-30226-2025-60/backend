@@ -1038,9 +1038,33 @@ router.get('/fotos-perfil', async (req, res) => {
   });
  
 
+  const isLocal = process.env.NODE_ENV !== "production";
+  const FRONTEND_URL = isLocal
+    ? "http://localhost:8081"
+    : "https://booklyweb-469w.onrender.com";
+  
 
-
-
+  router.get("/logout", (req, res) => {
+    res.clearCookie("connect.sid", {
+      path: "/",
+      domain: isLocal ? undefined : "booklyweb-469w.onrender.com",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    });
+    res.clearCookie("userEmail", {
+      path: "/",
+      domain: isLocal ? undefined : "booklyweb-469w.onrender.com",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    });
+    res.clearCookie("isGoogleAuth", {
+      path: "/",
+      domain: isLocal ? undefined : "booklyweb-469w.onrender.com",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    });
+    res.send("Sesión cerrada correctamente.");
+  });
 
 
 
