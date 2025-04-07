@@ -46,6 +46,7 @@ router.get(
       httpOnly: false, // Necesario para acceder desde el frontend
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      domain: isLocal ? undefined : "booklyweb-469w.onrender.com", // <-- AÑADIDO
       maxAge: 24 * 60 * 60 * 1000, // 1 día de duración
     });
     // **Si el usuario está autenticado, guardar su correo en la cookie**
@@ -54,6 +55,7 @@ router.get(
         httpOnly: false, // Necesario para acceder desde el frontend
         secure: process.env.NODE_ENV === "production",
         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        domain: isLocal ? undefined : "booklyweb-469w.onrender.com", // <-- AÑADIDO
         maxAge: 24 * 60 * 60 * 1000, // 1 día de duración
       });
     }
