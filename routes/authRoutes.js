@@ -53,7 +53,7 @@ router.get(
       });
     }
     // Redirigir al frontend
-    res.redirect(`${FRONTEND_URL}/inicio`);
+    res.redirect(`${FRONTEND_URL}/`);
   }
 );
 
