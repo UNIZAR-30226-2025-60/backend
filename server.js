@@ -34,6 +34,41 @@ const { FOREIGNKEYS } = require("sequelize/lib/query-types");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+
+if( process.env.NODE_ENV !== 'test'){
+  const swaggerJsdoc = require('swagger-jsdoc');
+  const swaggerUi = require('swagger-ui-express');
+  
+  // Configuración de Swagger
+  const swaggerOptions = {
+    definition: {
+      openapi: '3.0.0',  // Usamos OpenAPI 3.0
+      info: {
+        title: 'Mi API',
+        version: '1.0.0',
+        description: 'Documentación de la API de mi aplicación'
+      },
+      servers: [
+        {
+          url: 'http://localhost:5000',  // URL de la API en desarrollo
+        }
+      ]
+    },
+    apis: ['./routes/*.js'],  // Ruta a los archivos donde se documentan las rutas de tu API
+  };
+
+  // Generamos la documentación de Swagger
+  const swaggerDocs = swaggerJsdoc(swaggerOptions);
+  
+  // Devolvemos la documentación de Swagger en la ruta /api-docs
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+  
+  //Rutas de nuestra API
+  app.get("/", (req, res) => {
+    res.send("Bienvenido a la API de Bookly");
+  });
+}
+
 app.set("trust proxy", 1);// Para que las cookies funcionen en producción(render)
 
 // Configuración de CORS

@@ -12,6 +12,24 @@ const {
 } = require('../models/foro');
 
 // Ruta para obtener el foro completo
+/**
+ * @swagger
+ * /api/obtenerForoCompleto:
+ *   get:
+ *     summary: Obtener el foro completo
+ *     description: Retorna todas las preguntas y respuestas disponibles en el foro.
+ *     responses:
+ *       200:
+ *         description: Foro completo obtenido con éxito
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *       500:
+ *         description: Error al obtener el foro
+ */
 router.get('/obtenerForoCompleto', async (req, res) => {
   try {
     const foro = await obtenerForoCompleto();
@@ -22,7 +40,32 @@ router.get('/obtenerForoCompleto', async (req, res) => {
   }
 });
 
-// Ruta para obtener preguntas con o sin usuario
+ // Ruta para obtener preguntas con o sin usuario
+/**
+ * @swagger
+ * /api/preguntas:
+ *   get:
+ *     summary: Obtener preguntas del foro
+ *     description: Obtiene todas las preguntas del foro, o filtra por correo de usuario si se proporciona.
+ *     parameters:
+ *       - in: query
+ *         name: usuarioCorreo
+ *         required: false
+ *         description: Correo del usuario para filtrar preguntas asociadas a ese usuario
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Lista de preguntas obtenidas
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *       500:
+ *         description: Error al obtener preguntas
+ */
 router.get('/preguntas', async (req, res) => {
   const { usuarioCorreo } = req.query;
   try {
@@ -34,7 +77,53 @@ router.get('/preguntas', async (req, res) => {
   }
 });
 
+
 // Ruta para agregar una pregunta
+/**
+ * @swagger
+ * /api/preguntas:
+ *   post:
+ *     summary: Agregar una nueva pregunta al foro
+ *     description: Permite a un usuario agregar una nueva pregunta al foro.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               usuarioCorreo:
+ *                 type: string
+ *                 description: Correo electrónico del usuario que agrega la pregunta
+ *               pregunta:
+ *                 type: string
+ *                 description: El contenido de la pregunta
+ *     responses:
+ *       201:
+ *         description: Pregunta agregada con éxito
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 mensaje:
+ *                   type: string
+ *                   example: "Pregunta agregada con éxito"
+ *                 pregunta:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       description: ID de la pregunta agregada
+ *                     usuarioCorreo:
+ *                       type: string
+ *                     pregunta:
+ *                       type: string
+ *       400:
+ *         description: Faltan campos obligatorios
+ *       500:
+ *         description: Error al agregar la pregunta
+ */
 router.post('/preguntas', async (req, res) => {
   const { usuarioCorreo, pregunta } = req.body;
 
@@ -52,7 +141,32 @@ router.post('/preguntas', async (req, res) => {
   }
 });
 
-// Ruta para obtener respuestas de una pregunta
+ // Ruta para obtener respuestas de una pregunta
+/**
+ * @swagger
+ * /api/obtenerRespuestas:
+ *   get:
+ *     summary: Obtener respuestas de una pregunta
+ *     description: Obtiene todas las respuestas asociadas a una pregunta específica mediante su ID.
+ *     parameters:
+ *       - in: query
+ *         name: preguntaId
+ *         required: true
+ *         description: ID de la pregunta para la que se obtienen las respuestas
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Lista de respuestas obtenidas
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *       500:
+ *         description: Error al obtener respuestas
+ */
 router.get('/obtenerRespuestas', async (req, res) => {
   const { preguntaId } = req.query;
   try {
@@ -64,7 +178,40 @@ router.get('/obtenerRespuestas', async (req, res) => {
   }
 });
 
-// Ruta para agregar una respuesta
+
+ // Ruta para agregar una respuesta
+/**
+ * @swagger
+ * /api/agregarRespuesta:
+ *   post:
+ *     summary: Agregar una respuesta a una pregunta
+ *     description: Permite a un usuario agregar una respuesta a una pregunta existente en el foro.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               pregunta_id:
+ *                 type: integer
+ *                 description: ID de la pregunta a la que se está respondiendo
+ *               usuario_respuesta:
+ *                 type: string
+ *                 description: Correo electrónico del usuario que responde
+ *               mensaje_respuesta:
+ *                 type: string
+ *                 description: El contenido de la respuesta
+ *     responses:
+ *       201:
+ *         description: Respuesta agregada con éxito
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *       500:
+ *         description: Error al agregar respuesta
+ */
 router.post('/agregarRespuesta', async (req, res) => {
   const { pregunta_id, usuario_respuesta, mensaje_respuesta } = req.body;
   try {
@@ -76,7 +223,37 @@ router.post('/agregarRespuesta', async (req, res) => {
   }
 });
 
+
 // Ruta para obtener el número de respuestas de una pregunta
+/**
+ * @swagger
+ * /api/obtenerNumeroRespuestas:
+ *   get:
+ *     summary: Obtener el número de respuestas de una pregunta
+ *     description: Devuelve el número de respuestas para una pregunta específica, basado en el ID de la pregunta.
+ *     parameters:
+ *       - in: query
+ *         name: preguntaId
+ *         required: true
+ *         description: ID de la pregunta para la cual se desean obtener el número de respuestas.
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Número de respuestas encontrado con éxito
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 numRespuestas:
+ *                   type: integer
+ *                   description: Número de respuestas para la pregunta especificada
+ *       400:
+ *         description: ID de la pregunta no válido o falta el parámetro
+ *       500:
+ *         description: Error interno del servidor al obtener el número de respuestas
+ */
 router.get('/obtenerNumeroRespuestas', async (req, res) => {
   const { preguntaId } = req.query;
   try {

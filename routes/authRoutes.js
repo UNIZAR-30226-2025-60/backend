@@ -21,6 +21,7 @@ const FRONTEND_URL = isLocal
  *       500:
  *         description: Error al redirigir a la autenticación de Google
  */
+
 router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 
 // Ruta de redirección después de autenticación en web
@@ -44,11 +45,12 @@ router.get(
     console.log("📌 Sesión actual:", req.session);
     res.cookie("isGoogleAuth", "true", {
       httpOnly: false, // Necesario para acceder desde el frontend
-      secure: !isLocal,
-      sameSite: isLocal ? "none" : "lax",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       domain: isLocal ? undefined : "booklyweb-469w.onrender.com", // <-- AÑADIDO
       maxAge: 24 * 60 * 60 * 1000, // 1 día de duración
     });
+
     // **Si el usuario está autenticado, guardar su correo en la cookie**
     if (req.user) {
       res.cookie("userEmail", req.user.correo, {
