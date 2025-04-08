@@ -5,7 +5,40 @@ const { Libro } = require('../models/Libro');
 const { User } = require('../models/User');
 
 // Ruta para obtener los fragmentos destacados de un usuario para un libro específico
-router.get('/', async (req, res) => {
+/**
+ * @swagger
+ * /api/fragmentos/obtenerFragmentos:
+ *   get:
+ *     summary: Obtener fragmentos destacados de un usuario para un libro específico
+ *     description: Devuelve los fragmentos destacados de un usuario para un libro específico, basado en el correo del usuario y el enlace del libro.
+ *     parameters:
+ *       - in: query
+ *         name: correo
+ *         required: true
+ *         description: Correo electrónico del usuario
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: enlace
+ *         required: true
+ *         description: Enlace del libro
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Lista de fragmentos destacados
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *       404:
+ *         description: Usuario o libro no encontrado
+ *       500:
+ *         description: Error al obtener fragmentos destacados
+ */
+router.get('/obtenerFragmentos', async (req, res) => {
     const { correo, enlace } = req.query;
 
     try {
@@ -39,6 +72,38 @@ router.get('/', async (req, res) => {
 });
 
 // Ruta para insertar un fragmento destacado dado un correo, enlace y página
+/**
+ * @swagger
+ * /api/fragmentos:
+ *   post:
+ *     summary: Insertar un fragmento destacado
+ *     description: Permite a un usuario agregar un fragmento destacado para un libro específico.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               correo:
+ *                 type: string
+ *                 description: Correo electrónico del usuario
+ *               enlace:
+ *                 type: string
+ *                 description: Enlace del libro
+ *               pagina:
+ *                 type: integer
+ *                 description: Página del libro que se marca como fragmento destacado
+ *     responses:
+ *       201:
+ *         description: Fragmento destacado agregado con éxito
+ *       400:
+ *         description: La página no es válida (fuera de rango)
+ *       404:
+ *         description: Usuario o libro no encontrado
+ *       500:
+ *         description: Error al agregar fragmento destacado
+ */
 router.post('/', async (req, res) => {
     const { correo, enlace, pagina } = req.body;
 
@@ -76,6 +141,36 @@ router.post('/', async (req, res) => {
 });
 
 // Ruta para eliminar un fragmento dado un correo, enlace y página
+/**
+ * @swagger
+ * /api/fragmentos:
+ *   delete:
+ *     summary: Eliminar un fragmento destacado
+ *     description: Permite a un usuario eliminar un fragmento destacado dado un correo, enlace y página.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               correo:
+ *                 type: string
+ *                 description: Correo electrónico del usuario
+ *               enlace:
+ *                 type: string
+ *                 description: Enlace del libro
+ *               pagina:
+ *                 type: integer
+ *                 description: Página del libro que se desea eliminar
+ *     responses:
+ *       200:
+ *         description: Fragmento eliminado con éxito
+ *       404:
+ *         description: Usuario, libro o fragmento no encontrado
+ *       500:
+ *         description: Error al eliminar fragmento
+ */
 router.delete('/', async (req, res) => {
     const { correo, enlace, pagina } = req.body;
 
