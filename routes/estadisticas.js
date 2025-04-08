@@ -7,13 +7,32 @@ const { User } = require('../models/User');
 // RUTA PARA OBTENER LOS 3 USUARIOS QUE MÁS HAN LEÍDO EL MES ACTUAL
 // Probar: 
 //   GET http://localhost:3000/api/estadisticas/top3
+
+/**
+ * @swagger
+ * /api/estadisticas/top3:
+ *   get:
+ *     summary: Obtener los 3 usuarios que más han leído este mes
+ *     description: Devuelve los 3 usuarios que más han leído libros en el mes actual.
+ *     responses:
+ *       200:
+ *         description: Los 3 usuarios que más han leído en el mes
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *       500:
+ *         description: Error al obtener los 3 usuarios que más han leído del mes
+ */
 router.get('/top3', async (req, res) => {
     try {
         const usuariosTop3 = await obtenerTop3UsuariosDelMes();
 
-        if (usuariosTop3.length === 0) {
-            return res.status(404).send('No se encontraron usuarios que hayan leído libros este mes.');
-        }
+        // if (usuariosTop3.length === 0) {
+        //     return res.status(404).send('No se encontraron usuarios que hayan leído libros este mes.');
+        // }
 
         res.json(usuariosTop3);
 
@@ -26,15 +45,34 @@ router.get('/top3', async (req, res) => {
 // RUTA PARA OBTENER LOS 3 USUARIOS QUE MÁS HAN LEÍDO EN EL AÑO ACTUAL
 // Probar:
 //   GET http://localhost:3000/api/estadisticas/top3anuales
+
+/**
+ * @swagger
+ * /api/estadisticas/top3anuales:
+ *   get:
+ *     summary: Obtener los 3 usuarios que más han leído este año
+ *     description: Devuelve los 3 usuarios que más han leído libros en el año actual.
+ *     responses:
+ *       200:
+ *         description: Los 3 usuarios que más han leído en el año
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *       500:
+ *         description: Error al obtener los 3 usuarios que más han leído del año
+ */
 router.get('/top3anuales', async (req, res) => {
     try {
         const currentYear = new Date().getFullYear();
 
         const usuariosTop3Anuales = await obtenerTop3UsuariosDelAnio(currentYear);
 
-        if (usuariosTop3Anuales.length === 0) {
-            return res.status(404).send('No se encontraron usuarios que hayan leído libros este año.');
-        }
+        // if (usuariosTop3Anuales.length === 0) {
+        //     return res.status(404).send('No se encontraron usuarios que hayan leído libros este año.');
+        // }
 
         res.json(usuariosTop3Anuales);
 
@@ -48,6 +86,32 @@ router.get('/top3anuales', async (req, res) => {
 // RUTA PARA OBTENER LOS 5 LIBROS QUE MÁS SE HAN LEÍDO DADO UN AÑO
 // Probar: 
 //   GET http://localhost:3000/api/estadisticas/top15libros/:year
+
+/**
+ * @swagger
+ * /api/estadisticas/top5libros/{year}:
+ *   get:
+ *     summary: Obtener los 5 libros más leídos dado un año
+ *     description: Devuelve los 5 libros más leídos en un año específico.
+ *     parameters:
+ *       - in: path
+ *         name: year
+ *         required: true
+ *         description: Año para obtener los libros más leídos
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Los 5 libros más leídos del año
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *       500:
+ *         description: Error al obtener los 5 libros más leídos del año
+ */
 router.get('/top5libros/:year', async (req, res) => {
     const { year } = req.params;
     
@@ -56,9 +120,9 @@ router.get('/top5libros/:year', async (req, res) => {
         
         const librosTop5Anio = await obtenerTop5LibrosDelAnio(year);
         
-        if (librosTop5Anio.length === 0) {
-            return res.status(404).send('No se encontraron libros leídos en este año.');
-        }
+        // if (librosTop5Anio.length === 0) {
+        //     return res.status(404).send('No se encontraron libros leídos en este año.');
+        // }
 
         res.json(librosTop5Anio);
 
@@ -72,6 +136,38 @@ router.get('/top5libros/:year', async (req, res) => {
 // RUTA PARA OBTENER LOS 5 LIBROS QUE MÁS SE HAN LEÍDO DADO UN MES Y UN AÑO
 // Probar: 
 //   GET http://localhost:3000/api/estadisticas/top15libros/:month/:year
+
+/**
+ * @swagger
+ * /api/estadisticas/top5libros/{month}/{year}:
+ *   get:
+ *     summary: Obtener los 5 libros más leídos dado un mes y un año
+ *     description: Retorna los 5 libros más leídos en un mes y año específicos.
+ *     parameters:
+ *       - in: path
+ *         name: month
+ *         required: true
+ *         description: Mes para obtener los libros más leídos
+ *         schema:
+ *           type: integer
+ *       - in: path
+ *         name: year
+ *         required: true
+ *         description: Año para obtener los libros más leídos
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Los 5 libros más leídos del mes y año
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *       500:
+ *         description: Error al obtener los 5 libros más leídos del mes y año
+ */
 router.get('/top5libros/:month/:year', async (req, res) => {
     const { month, year } = req.params;
     
@@ -80,9 +176,9 @@ router.get('/top5libros/:month/:year', async (req, res) => {
         
         const librosTop5 = await obtenerTop5LibrosDelMesYAnio(month, year);
         
-        if (librosTop5.length === 0) {
-            return res.status(404).send('No se encontraron libros leídos en este mes y año.');
-        }
+        // if (librosTop5.length === 0) {
+        //     return res.status(404).send('No se encontraron libros leídos en este mes y año.');
+        // }
 
         res.json(librosTop5);
 
@@ -95,15 +191,39 @@ router.get('/top5libros/:month/:year', async (req, res) => {
 // RUTA PARA OBTENER LOS DATOS GENERALES DE UN USUARIO
 // Probar:
 //   GET http://localhost:3000/api/estadisticas/generales/:correo
+
+/**
+ * @swagger
+ * /api/estadisticas/generales/{correo}:
+ *   get:
+ *     summary: Obtener estadísticas generales de un usuario
+ *     description: Devuelve las estadísticas generales de un usuario basado en su correo electrónico.
+ *     parameters:
+ *       - in: path
+ *         name: correo
+ *         required: true
+ *         description: Correo del usuario para obtener sus estadísticas generales
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Estadísticas generales del usuario
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *       500:
+ *         description: Error al obtener las estadísticas generales del usuario
+ */
 router.get('/generales/:correo', async (req, res) => {
     const { correo } = req.params; // Obtenemos el correo del usuario desde los parámetros de la ruta
 
     try {
         const estadisticasGenerales = await obtenerEstadisticasGeneralesPorUsuario(correo);
 
-        if (!estadisticasGenerales) {
-            return res.status(404).send('No se encontraron estadísticas para este usuario.');
-        }
+        // if (!estadisticasGenerales) {
+        //     return res.status(404).send('No se encontraron estadísticas para este usuario.');
+        // }
 
         res.json(estadisticasGenerales);
 
@@ -117,15 +237,41 @@ router.get('/generales/:correo', async (req, res) => {
 // RUTA PARA OBTENER LOS LIBROS RECOMENDADOS SEGÚN LAS TEMÁTICAS MÁS LEÍDAS POR EL USUARIO
 // Probar: 
 //   GET http://localhost:3000/api/estadisticas/librosrecomendados/:correo
+
+/**
+ * @swagger
+ * /api/estadisticas/librosrecomendados/{correo}:
+ *   get:
+ *     summary: Obtener libros recomendados según las temáticas más leídas por el usuario
+ *     description: Devuelve una lista de libros recomendados para un usuario basados en sus temáticas más leídas.
+ *     parameters:
+ *       - in: path
+ *         name: correo
+ *         required: true
+ *         description: Correo del usuario para obtener los libros recomendados
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Lista de libros recomendados
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *       500:
+ *         description: Error al obtener los libros recomendados
+ */
 router.get('/librosrecomendados/:correo', async (req, res) => {
     const { correo } = req.params;
 
     try {
         const librosRecomendados = await obtenerLibrosRecomendadosSegunTematicas(correo);
 
-        if (librosRecomendados.length === 0) {
-            return res.status(404).send('No se encontraron libros recomendados.');
-        }
+        // if (librosRecomendados.length === 0) {
+        //     return res.status(404).send('No se encontraron libros recomendados.');
+        // }
 
         res.json(librosRecomendados);
 
@@ -142,6 +288,32 @@ router.get('/librosrecomendados/:correo', async (req, res) => {
 //    - librosLeidos (enlace, nombre, autor, fech_publ, resumen)
 // Probar: 
 //   GET http://localhost:3000/api/estadisticas/:usuario
+
+/**
+ * @swagger
+ * /api/estadisticas/{correo}:
+ *   get:
+ *     summary: Obtener estadísticas de un usuario por mes
+ *     description: Retorna las estadísticas de libros leídos por un usuario en un mes específico.
+ *     parameters:
+ *       - in: path
+ *         name: correo
+ *         required: true
+ *         description: Correo del usuario
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Estadísticas del usuario para el mes
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *       404:
+ *         description: Usuario no encontrado
+ *       500:
+ *         description: Error al obtener las estadísticas
+ */
 router.get('/:correo', async (req, res) => {
     const { correo } = req.params;
     
@@ -184,6 +356,71 @@ router.get('/:correo', async (req, res) => {
 //    - librosLeidos (enlace, nombre, autor, fech_publ, resumen)
 // Probar: 
 //   GET http://localhost:3000/api/estadisticas/:usuario/:year
+
+/**
+ * @swagger
+ * /api/estadisticas/{correo}/{year}:
+ *   get:
+ *     summary: Obtener estadísticas de lectura de un usuario para un año específico
+ *     description: Obtiene estadísticas detalladas de lectura para un usuario, incluyendo libros completados, libros en progreso, temáticas más leídas, libros más valorados, y detalles de los libros leídos.
+ *     parameters:
+ *       - in: path
+ *         name: correo
+ *         required: true
+ *         description: Correo electrónico del usuario cuya estadística se desea obtener
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: year
+ *         required: true
+ *         description: Año para el cual se desean obtener las estadísticas de lectura
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Estadísticas detalladas de lectura del usuario para el año especificado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 libros_completados:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                 libros_en_progreso:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                 tematicasMasLeidas:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 librosMasValorados:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                 librosLeidos:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       enlace:
+ *                         type: string
+ *                       nombre:
+ *                         type: string
+ *                       autor:
+ *                         type: string
+ *                       fech_publ:
+ *                         type: string
+ *                         format: date
+ *                       resumen:
+ *                         type: string
+ *       404:
+ *         description: Usuario no encontrado o no hay estadísticas para el usuario en el año
+ *       500:
+ *         description: Error al obtener las estadísticas del usuario
+ */
 router.get('/:correo/:year', async (req, res) => {
     const { correo, year } = req.params;
     

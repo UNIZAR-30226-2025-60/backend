@@ -20,6 +20,36 @@ const { registrarUser } = require('../models/User');
 // });
 
 //Ruta para obtener toda la información de un usuario
+/**
+ * @swagger
+ * /api/usuario/{correo}:
+ *   get:
+ *     summary: Obtener toda la información de un usuario
+ *     description: Obtiene todos los detalles de un usuario dado su correo electrónico.
+ *     parameters:
+ *       - in: path
+ *         name: correo
+ *         required: true
+ *         description: Correo del usuario
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Datos del usuario
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 correo:
+ *                   type: string
+ *                 nombre:
+ *                   type: string
+ *       404:
+ *         description: Usuario no encontrado
+ *       500:
+ *         description: Error al obtener usuario
+ */
 router.get("/usuario/:correo", async (req, res) => {
   const { correo } = req.params;
   try {
@@ -37,6 +67,35 @@ router.get("/usuario/:correo", async (req, res) => {
 });
 
 // Ruta para cambiar la contraseña dado un usuario, su contraseña actual y su nueva contraseña
+/**
+ * @swagger
+ * /api/usuario/cambiar-contrasena:
+ *   post:
+ *     summary: Cambiar la contraseña de un usuario
+ *     description: Permite a un usuario cambiar su contraseña. Se requiere la contraseña actual y la nueva contraseña.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               correo:
+ *                 type: string
+ *               oldPassword:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Contraseña actualizada correctamente
+ *       400:
+ *         description: La contraseña actual es incorrecta o faltan parámetros
+ *       404:
+ *         description: Usuario no encontrado
+ *       500:
+ *         description: Error al cambiar la contraseña
+ */
 router.post("/usuario/cambiar-contrasena", async (req, res) => {
   const { correo, oldPassword, newPassword } = req.body;
 
@@ -77,50 +136,162 @@ router.post("/usuario/cambiar-contrasena", async (req, res) => {
   }
 });
 
-// Ruta para registrar y dejar la sesión iniciado automáticamente de un nuevo usuario en el sistema
-router.post('/registro', async (req, res) => {
-    console.log('Datos recibidos en el backend:', req.body);
-    const { nombre, correo, contrasena } = req.body;
-    try {
-        // Encriptar la contraseña antes de guardarla
-        const saltRounds = 10;
-        const hashedPassword = await bcrypt.hash(contrasena, saltRounds);
+// Ruta para saber si un usuario se registró mediante Google
+/**
+ * @swagger
+ * /api/usuario/esGoogle/{correo}:
+ *   get:
+ *     summary: Verificar si un usuario se ha registrado con Google
+ *     description: Devuelve un valor booleano que indica si el usuario se registró mediante Google (cuando la contraseña es nula).
+ *     parameters:
+ *       - in: path
+ *         name: correo
+ *         required: true
+ *         description: Correo electrónico del usuario que se desea verificar
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Respuesta indicando si el usuario se registró con Google
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 esGoogle:
+ *                   type: boolean
+ *                   description: Indica si el usuario se ha registrado con Google (true) o no (false)
+ *       500:
+ *         description: Error al verificar el registro de usuario
+ */
+router.get("/usuario/esGoogle/:correo", async (req, res) => {
+  const { correo } = req.params;
+  try {
+    const result = await pool.query(
+      "SELECT * FROM USUARIO WHERE correo = $1 AND contrasena IS NULL",
+      [correo]
+    );
 
-        const userResult = await pool.query(
-            'INSERT INTO USUARIO (nombre, correo, contrasena) VALUES ($1, $2, $3) RETURNING *',
-            [nombre, correo, hashedPassword]
-        );
-        const newUser = userResult.rows[0];
-
-        const listaResult = await pool.query(
-            'INSERT INTO LISTA (nombre, usuario_id, publica, descripcion) VALUES ($1, $2, $3, $4) RETURNING *',
-            ['Mis Favoritos', newUser.correo, false, 'Tu lista personal de favoritos']
-        );
-
-        req.login(newUser, (err) => {
-            if (err) {
-                console.error('Error al iniciar sesión automáticamente:', err);
-                return res.status(500).send('Error al iniciar sesión');
-            }
-            console.log('Usuario autenticado:', newUser);
-            console.log('Sesión actual:', req.session);
-            req.session.save((err) => {
-                if (err) {
-                    console.error('Error al guardar sesión:', err);
-                    return res.status(500).send('Error al guardar sesión');
-                }
-                res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8081');
-                res.setHeader('Access-Control-Allow-Credentials', 'true');
-                res.status(201).json({ usuario: newUser, listaFavoritos: listaResult.rows[0] });
-            });
-        });
-    } catch (error) {
-        console.error('Error al registrar usuario y crear lista de favoritos:', error);
-        res.status(500).send('Error al registrar usuario: ' + error.message);
+    if (result.rows.length > 0) {
+      return res.json({ esGoogle: true });
+    } else {
+      return res.json({ esGoogle: false });
     }
+  } catch (error) {
+    console.error("Error al verificar si el usuario es de Google:", error);
+    res.status(500).json({ error: "Error en la verificación" });
+  }
 });
 
 
+// Ruta para registrar y dejar la sesión iniciado automáticamente de un nuevo usuario en el sistema
+/**
+ * @swagger
+ * /api/registro:
+ *   post:
+ *     summary: Registrar un nuevo usuario y autenticarlo
+ *     description: Registra un nuevo usuario en el sistema y lo autentica automáticamente, creando también la lista "Mis Favoritos".
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nombre:
+ *                 type: string
+ *               correo:
+ *                 type: string
+ *               contrasena:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Usuario registrado y sesión iniciada correctamente
+ *       500:
+ *         description: Error al registrar el usuario o iniciar sesión
+ */
+router.post('/registro', async (req, res) => {
+  console.log('Datos recibidos en el backend:', req.body);
+  const { nombre, correo, contrasena } = req.body;
+  try {
+      // Encriptar la contraseña antes de guardarla
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(contrasena, saltRounds);
+
+      const userResult = await pool.query(
+          'INSERT INTO USUARIO (nombre, correo, contrasena) VALUES ($1, $2, $3) RETURNING *',
+          [nombre, correo, hashedPassword]
+      );
+      const newUser = userResult.rows[0];
+
+      // Verificar si la lista "Mis Favoritos" ya existe para este usuario
+      const listaExistente = await pool.query(
+          'SELECT * FROM LISTA WHERE nombre = $1 AND usuario_id = $2',
+          ['Mis Favoritos', newUser.correo]
+      );
+
+      let listaFavoritos;
+      if (listaExistente.rows.length === 0) {
+          // Si no existe, creamos la lista
+          const listaResult = await pool.query(
+              'INSERT INTO LISTA (nombre, usuario_id, publica, descripcion) VALUES ($1, $2, $3, $4) RETURNING *',
+              ['Mis Favoritos', newUser.correo, false, 'Tu lista personal de favoritos']
+          );
+          listaFavoritos = listaResult.rows[0];
+      } else {
+          // Si ya existe, la utilizamos directamente
+          listaFavoritos = listaExistente.rows[0];
+      }
+
+      req.login(newUser, (err) => {
+          if (err) {
+              console.error('Error al iniciar sesión automáticamente:', err);
+              return res.status(500).send('Error al iniciar sesión');
+          }
+          console.log('Usuario autenticado:', newUser);
+          console.log('Sesión actual:', req.session);
+          req.session.save((err) => {
+              if (err) {
+                  console.error('Error al guardar sesión:', err);
+                  return res.status(500).send('Error al guardar sesión');
+              }
+              res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8081');
+              res.setHeader('Access-Control-Allow-Credentials', 'true');
+              res.status(201).json({ usuario: newUser, listaFavoritos });
+          });
+      });
+  } catch (error) {
+      console.error('Error al registrar usuario y crear lista de favoritos:', error);
+      res.status(500).send('Error al registrar usuario: ' + error.message);
+  }
+});
+
+// Ruta para registrar y dejar la sesión iniciado automáticamente de un nuevo usuario en el sistema (en móvil)
+/**
+ * @swagger
+ * /api/registroM:
+ *   post:
+ *     summary: Registrar un nuevo usuario y autenticarlo en móvil
+ *     description: Registra un nuevo usuario y lo autentica en la aplicación móvil, creando también la lista "Mis Favoritos".
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nombre:
+ *                 type: string
+ *               correo:
+ *                 type: string
+ *               contrasena:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Usuario registrado y sesión iniciada correctamente
+ *       500:
+ *         description: Error al registrar el usuario o iniciar sesión
+ */
 router.post('/registroM', async (req, res) => {
   console.log('Datos recibidos en el backend:', req.body);
   const { nombre, correo, contrasena } = req.body;
@@ -189,6 +360,31 @@ router.post('/registroM', async (req, res) => {
 
 
 // Ruta para iniciar sesión de un usuario ya registrado en el sistema
+/**
+ * @swagger
+ * /api/login:
+ *   post:
+ *     summary: Iniciar sesión de un usuario
+ *     description: Permite a un usuario ya registrado iniciar sesión proporcionando su correo y contraseña.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               correo:
+ *                 type: string
+ *               contrasena:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Inicio de sesión exitoso
+ *       401:
+ *         description: Correo o contraseña incorrectos
+ *       500:
+ *         description: Error al iniciar sesión
+ */
 router.post('/login', async (req, res) => {
     const { correo, contrasena } = req.body;
     try {
@@ -232,6 +428,31 @@ router.post('/login', async (req, res) => {
 
 
 // Para el login en movil
+/**
+ * @swagger
+ * /api/loginM:
+ *   post:
+ *     summary: Iniciar sesión de un usuario (móvil)
+ *     description: Permite a un usuario móvil iniciar sesión proporcionando su correo y contraseña.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               correo:
+ *                 type: string
+ *               contrasena:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Inicio de sesión móvil exitoso
+ *       401:
+ *         description: Correo o contraseña incorrectos
+ *       500:
+ *         description: Error al iniciar sesión
+ */
 router.post('/loginM', async (req, res) => {
   const { correo, contrasena } = req.body;
   try {
@@ -272,6 +493,31 @@ router.post('/loginM', async (req, res) => {
 });
   
 // Cambiar el nombre de un usuario
+/**
+ * @swagger
+ * /api/usuario/cambiar-nombre:
+ *   post:
+ *     summary: Cambiar el nombre de un usuario
+ *     description: Permite a un usuario cambiar su nombre proporcionado un correo y el nuevo nombre.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               correo:
+ *                 type: string
+ *               nombre:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Nombre actualizado correctamente
+ *       404:
+ *         description: Usuario no encontrado
+ *       500:
+ *         description: Error al cambiar el nombre
+ */
 router.post('/usuario/cambiar-nombre', async (req, res) => {
   const { correo, nombre } = req.body;
 
@@ -292,9 +538,90 @@ router.post('/usuario/cambiar-nombre', async (req, res) => {
   }
 });
 
+// Cambiar la imagen de perfil de un usuario
+/**
+ * @swagger
+ * /api/usuario/cambiar-foto:
+ *   post:
+ *     summary: Cambiar la imagen de perfil de un usuario
+ *     description: Permite a un usuario actualizar su foto de perfil proporcionada en la solicitud.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               correo:
+ *                 type: string
+ *                 description: Correo electrónico del usuario cuya foto de perfil se desea actualizar
+ *               foto_perfil:
+ *                 type: string
+ *                 description: URL de la nueva imagen de perfil
+ *     responses:
+ *       200:
+ *         description: Imagen de perfil actualizada con éxito
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 correo:
+ *                   type: string
+ *                 foto_perfil:
+ *                   type: string
+ *       404:
+ *         description: Usuario no encontrado
+ *       500:
+ *         description: Error al cambiar la imagen de perfil
+ */
+router.post('/usuario/cambiar-foto', async (req, res) => {
+  const { correo, foto_perfil } = req.body;
+  try {
+    const result = await pool.query(
+      'UPDATE USUARIO SET foto_perfil = $1 WHERE correo = $2 RETURNING *',
+      [foto_perfil, correo]
+    );
 
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error("Error al cambiar la imagen de perfil:", error);
+    res.status(500).json({ error: "Error al cambiar la imagen de perfil" });
+  }
+});
 
 // Guardar la última página leída automáticamente
+/**
+ * @swagger
+ * /api/guardar-pagina:
+ *   post:
+ *     summary: Guardar la última página leída de un libro por un usuario
+ *     description: Permite a un usuario guardar la última página leída de un libro específico.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               correo:
+ *                 type: string
+ *               libro_id:
+ *                 type: string
+ *               pagina:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: Página guardada correctamente
+ *       400:
+ *         description: URL del libro no válida o el libro no existe en la base de datos
+ *       500:
+ *         description: Error al guardar la página
+ */
 router.post('/guardar-pagina', async (req, res) => {
   let { correo, libro_id, pagina } = req.body;
 
@@ -340,6 +667,33 @@ router.post('/guardar-pagina', async (req, res) => {
 
 
 // Obtener última página leída
+/**
+ * @swagger
+ * /api/ultima-pagina:
+ *   get:
+ *     summary: Obtener la última página leída por un usuario de un libro
+ *     description: Obtiene la última página leída por un usuario de un libro específico.
+ *     parameters:
+ *       - in: query
+ *         name: correo
+ *         required: true
+ *         description: Correo del usuario
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: libro_id
+ *         required: true
+ *         description: ID del libro
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Página obtenida correctamente
+ *       404:
+ *         description: No se encontró progreso guardado, devolviendo 1
+ *       500:
+ *         description: Error al obtener la última página
+ */
 router.get('/ultima-pagina', async (req, res) => {
   let { correo, libro_id } = req.query;
 
@@ -372,6 +726,15 @@ router.get('/ultima-pagina', async (req, res) => {
       console.log("📌 Página encontrada en BD:", result.rows[0].pagina);
     } else {
       console.warn("⚠️ No se encontró progreso guardado, devolviendo 1.");
+        // Insertar el libro en la lista "En proceso" si no existe progreso guardado
+        await pool.query(
+          `INSERT INTO libros_lista (usuario_id, enlace_libro, nombre_lista)
+           VALUES ($1, $2, $3)
+           ON CONFLICT (usuario_id, enlace_libro, nombre_lista) DO NOTHING;`,
+          [decodedCorreo, libroIdNeon, "En proceso"]
+      );
+
+      console.log("📚 Libro añadido automáticamente a la lista 'En proceso'.");
     }
 
     res.json({ pagina: result.rows[0]?.pagina || 1 });
@@ -385,6 +748,31 @@ router.get('/ultima-pagina', async (req, res) => {
 
 
 // Guardar páginas favoritas
+/**
+ * @swagger
+ * /api/guardar-favorita:
+ *   post:
+ *     summary: Guardar una página como favorita
+ *     description: Permite a un usuario guardar una página de un libro como favorita.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               correo:
+ *                 type: string
+ *               enlace:
+ *                 type: string
+ *               pagina:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: Página favorita guardada correctamente
+ *       500:
+ *         description: Error al guardar página favorita
+ */
 router.post('/guardar-favorita', async (req, res) => {
   let { correo, enlace, pagina } = req.body;
 
@@ -418,6 +806,33 @@ router.post('/guardar-favorita', async (req, res) => {
 });
 
 // Eliminar páginas favoritas
+/**
+ * @swagger
+ * /api/eliminar-favorita:
+ *   delete:
+ *     summary: Eliminar una página de las favoritas
+ *     description: Permite a un usuario eliminar una página de su lista de páginas favoritas.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               correo:
+ *                 type: string
+ *               enlace:
+ *                 type: string
+ *               pagina:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: Página favorita eliminada correctamente
+ *       404:
+ *         description: La página no estaba marcada como favorita
+ *       500:
+ *         description: Error al eliminar página favorita
+ */
 router.delete('/eliminar-favorita', async (req, res) => {
   let { correo, enlace, pagina } = req.body;
 
@@ -453,6 +868,44 @@ router.delete('/eliminar-favorita', async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/verificar-favorita:
+ *   get:
+ *     summary: Verificar si una página está marcada como favorita
+ *     description: Permite verificar si una página de un libro es favorita para un usuario.
+ *     parameters:
+ *       - in: query
+ *         name: correo
+ *         required: true
+ *         description: Correo del usuario
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: enlace
+ *         required: true
+ *         description: Enlace del libro
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: pagina
+ *         required: true
+ *         description: Número de la página
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: La página es favorita
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 esFavorita:
+ *                   type: boolean
+ *       500:
+ *         description: Error al verificar favorita
+ */
 router.get('/verificar-favorita', async (req, res) => {
   let { correo, enlace, pagina } = req.query;
 
@@ -489,7 +942,7 @@ router.get('/verificar-favorita', async (req, res) => {
 
 
 // Obtener páginas favoritas
-router.get('/paginas-favoritas', async (req, res) => {
+router.get('/paginas-favoritas', async (req, res) => {  
   const { correo, enlace } = req.query;
 
   try {
@@ -507,6 +960,28 @@ router.get('/paginas-favoritas', async (req, res) => {
 // OBTENER TODAS LAS FOTOS DE PERFIL
 // Probar:
 //      GET http://localhost:3000/api/usuarios/fotos-perfil
+
+/**
+ * @swagger
+ * /api/fotos-perfil:
+ *   get:
+ *     summary: Obtener todas las fotos de perfil
+ *     description: Permite obtener todas las fotos de perfil disponibles.
+ *     responses:
+ *       200:
+ *         description: Lista de fotos de perfil
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   url:
+ *                     type: string
+ *       500:
+ *         description: Error al obtener fotos de perfil
+ */
 router.get('/fotos-perfil', async (req, res) => {
   try {
       const query = 'SELECT url FROM imagen_perfil';
@@ -519,7 +994,26 @@ router.get('/fotos-perfil', async (req, res) => {
   }
 });
 
-
+// Ruta para obtener un pdf almacenado en Google Drive
+/**
+ * @swagger
+ * /api/obtener-pdf/{id}:
+ *   get:
+ *     summary: Obtener un PDF de Google Drive
+ *     description: Permite obtener un PDF almacenado en Google Drive dado un ID de archivo.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID del archivo en Google Drive
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: PDF obtenido correctamente
+ *       500:
+ *         description: Error al obtener el PDF
+ */
   router.get('/obtener-pdf/:id', async (req, res) => {
     const fileId = req.params.id;
     const url = `https://drive.google.com/uc?id=${fileId}&export=download`;
@@ -544,9 +1038,33 @@ router.get('/fotos-perfil', async (req, res) => {
   });
  
 
-
-
-
+  const isLocal = process.env.NODE_ENV !== "production";
+  const FRONTEND_URL = isLocal
+    ? "http://localhost:8081"
+    : "https://booklyweb-469w.onrender.com";
+  
+// Ruta para cerrar sesión y eliminar cookies
+router.get("/logout", (req, res) => {
+  // Eliminar cookies
+  res.clearCookie("connect.sid", {
+    path: "/",
+    secure: process.env.NODE_ENV === "production", // Asegúrate de que sea seguro en producción
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Configuración SameSite
+  });
+  res.clearCookie("userEmail", {
+    path: "/",
+    secure: process.env.NODE_ENV === "production", // Asegúrate de que sea seguro en producción
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Configuración SameSite
+  });
+  res.clearCookie("isGoogleAuth", {
+    path: "/",
+    secure: process.env.NODE_ENV === "production", // Asegúrate de que sea seguro en producción
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Configuración SameSite
+  });
+  
+  // Responder con un mensaje de sesión cerrada
+  res.send("Sesión cerrada correctamente.");
+});
 
 
 
@@ -623,6 +1141,12 @@ router.get('/fotos-perfil', async (req, res) => {
         - Inicia conversaciones sobre el progreso de lectura si es relevante.
         - Proporciona datos curiosos o anécdotas sobre los libros mencionados.
         - Acaba la respuesta con un emoji amigable y si tiene sentido pregunta si necesita algo más.
+        - Y RECUERDA, no uses la información que no es relevante para la pregunta del usuario. Es decir,
+        no uses toda la información que tienes. Solo la necesaria. Si no es algo relacionado con la información que tienes
+        se breve con tu respuesta y no uses la información que tienes, solo el nombre.
+        - Y si no puedes responder a la pregunta del usuario, simplemente di que no puedes ayudarle con eso.
+        - Y si no entiendes la pregunta del usuario, simplemente di que no entiendes la pregunta y que lo repita.
+
       `;
   
       // Enviar la consulta a la API de Mistral

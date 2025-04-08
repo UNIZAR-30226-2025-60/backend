@@ -5,6 +5,7 @@ const Leido = sequelize.define('Leido', {
     usuario_id: {
         type: DataTypes.STRING,
         allowNull: false,
+        primaryKey: true,
         references: {
             model: 'usuario', // Relacionado con la tabla `USUARIO`
             key: 'correo'
@@ -14,6 +15,7 @@ const Leido = sequelize.define('Leido', {
     libro_id: {
         type: DataTypes.STRING,
         allowNull: false,
+        primaryKey: true,
         references: {
             model: 'libro', // Relacionado con la tabla `LIBRO`
             key: 'enlace'
@@ -27,7 +29,7 @@ const Leido = sequelize.define('Leido', {
 }, {
     tableName: 'leidos',  // Nombre exacto de la tabla
     timestamps: false,    // No generar automáticamente createdAt y updatedAt
-    freezeTableName: true // Evita que Sequelize pluralice el nombre de la tabla
+    freezeTableName: true, // Evita que Sequelize pluralice el nombre de la tabla
 });
 
 const obtenerLibrosLeidosPorUsuario = async (correo) => {

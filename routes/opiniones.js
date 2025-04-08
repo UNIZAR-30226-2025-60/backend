@@ -6,6 +6,43 @@ const { Opinion , agregarOpinion , obtenerOpinionesPorUsuario } = require('../mo
 
 // OBTENER TODAS LAS OPINIONES DADO UN LIBRO Y UNA VALORACIÓN (ej, para un libro, todas las reseñas que tienen un 4 como valoración)
 //http://localhost:3000/api/opiniones/valoracion/https%3A%2F%2Fdrive.google.com%2Ffile%2Fd%2F13DBqA252BfbCTaDJJOBXfqix6QypqQyB%2Fview%3Fusp%3Dsharing/4
+/**
+     * @swagger
+     * /api/opiniones/valoracion/{enlace}/{valor}:
+     *   get:
+     *     summary: Obtener todas las opiniones de un libro con una valoración específica
+     *     description: Obtiene todas las opiniones de un libro para una valoración específica (por ejemplo, todas las opiniones con una valoración de 4).
+     *     parameters:
+     *       - in: path
+     *         name: enlace
+     *         required: true
+     *         description: Enlace único del libro
+     *         schema:
+     *           type: string
+     *       - in: path
+     *         name: valor
+     *         required: true
+     *         description: Valoración del libro (número entre 1 y 5)
+     *         schema:
+     *           type: integer
+     *           minimum: 1
+     *           maximum: 5
+     *     responses:
+     *       200:
+     *         description: Lista de opiniones con la valoración solicitada
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                 $ref: '#/components/schemas/Opinion'
+     *       400:
+     *         description: Valoración inválida (debe estar entre 1 y 5)
+     *       404:
+     *         description: Libro no encontrado
+     *       500:
+     *         description: Error al filtrar las opiniones
+     */
 router.get('/valoracion/:enlace/:valor', async (req, res) => {
     try {
         const enlace = decodeURIComponent(req.params.enlace);
@@ -41,6 +78,31 @@ router.get('/valoracion/:enlace/:valor', async (req, res) => {
 });
 
 // OBTENER TODAS LAS VALORACIONES DE UN USUARIO, DADO UN USUARIO
+/**
+     * @swagger
+     * /api/opiniones/usuario/{usuario_id}:
+     *   get:
+     *     summary: Obtener todas las opiniones de un usuario
+     *     description: Retorna todas las opiniones de un usuario específico.
+     *     parameters:
+     *       - in: path
+     *         name: usuario_id
+     *         required: true
+     *         description: Correo del usuario
+     *         schema:
+     *           type: string
+     *     responses:
+     *       200:
+     *         description: Lista de todas las opiniones del usuario
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                 $ref: '#/components/schemas/Opinion'
+     *       500:
+     *         description: Error al obtener las opiniones del usuario
+     */
 router.get('/usuario/:usuario_id', async (req, res) => {
     try {
         const { usuario_id } = req.params;
@@ -55,6 +117,33 @@ router.get('/usuario/:usuario_id', async (req, res) => {
 // OBTENER TODAS LAS OPINIONES DADO UN ENLACE
 // http://localhost:3000/api/opiniones/https%3A%2F%2Fdrive.google.com%2Ffile%2Fd%2F13DBqA252BfbCTaDJJOBXfqix6QypqQyB%2Fview%3Fusp%3Dsharing
 // (porque debe estar codificado el enlace, luego abajo lo descodifico)
+/**
+     * @swagger
+     * /api/opiniones/{enlace}:
+     *   get:
+     *     summary: Obtener todas las opiniones de un libro dado su enlace
+     *     description: Obtiene todas las opiniones de un libro específico dado su enlace único.
+     *     parameters:
+     *       - in: path
+     *         name: enlace
+     *         required: true
+     *         description: Enlace único del libro
+     *         schema:
+     *           type: string
+     *     responses:
+     *       200:
+     *         description: Lista de opiniones del libro
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                 $ref: '#/components/schemas/Opinion'
+     *       404:
+     *         description: Libro no encontrado
+     *       500:
+     *         description: Error al obtener las opiniones
+     */
 router.get('/:enlace', async (req, res) => {
     try {
         console.log("Enlace recibido: ", req.params.enlace);
@@ -89,6 +178,45 @@ router.get('/:enlace', async (req, res) => {
 //     "mensaje": "Me encantó la narrativa y los personajes",
 //     "valor": 5
 // }
+
+/**
+     * @swagger
+     * /api/opiniones:
+     *   post:
+     *     summary: Publicar una nueva valoración para un libro
+     *     description: Permite a un usuario agregar una nueva valoración (opinión) para un libro.
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               usuario_id:
+     *                 type: string
+     *               libro_id:
+     *                 type: string
+     *               titulo_resena:
+     *                 type: string
+     *               mensaje:
+     *                 type: string
+     *               valor:
+     *                 type: integer
+     *                 description: Valoración entre 1 y 5
+     *             required:
+     *               - usuario_id
+     *               - libro_id
+     *               - titulo_resena
+     *               - mensaje
+     *               - valor
+     *     responses:
+     *       201:
+     *         description: Opinión agregada con éxito
+     *       400:
+     *         description: Datos faltantes o incorrectos
+     *       500:
+     *         description: Error al agregar la opinión
+     */
 router.post('/', async (req, res) => {
     try {
         const { usuario_id, libro_id, titulo_resena, mensaje, valor } = req.body;
