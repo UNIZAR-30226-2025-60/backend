@@ -1051,7 +1051,6 @@ router.get("/logout", (req, res) => {
       path: "/",
       secure: process.env.NODE_ENV === "production", // true en producción
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Configuración SameSite
-      domain: process.env.NODE_ENV === "production" ? ".onrender.com" : undefined, // Dominio en producción
     });
   };
 
