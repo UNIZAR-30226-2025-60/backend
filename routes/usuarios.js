@@ -255,7 +255,7 @@ router.post('/registro', async (req, res) => {
                   console.error('Error al guardar sesión:', err);
                   return res.status(500).send('Error al guardar sesión');
               }
-              res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8081');
+              // res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8081');
               res.setHeader('Access-Control-Allow-Credentials', 'true');
               res.status(201).json({ usuario: newUser, listaFavoritos });
           });
