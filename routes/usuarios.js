@@ -1046,22 +1046,20 @@ router.get('/fotos-perfil', async (req, res) => {
 // Ruta para cerrar sesión y eliminar cookies
 router.get("/logout", (req, res) => {
   // Eliminar cookies
-  res.clearCookie("connect.sid", {
-    path: "/",
-    secure: process.env.NODE_ENV === "production", // Asegúrate de que sea seguro en producción
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Configuración SameSite
-  });
-  res.clearCookie("userEmail", {
-    path: "/",
-    secure: process.env.NODE_ENV === "production", // Asegúrate de que sea seguro en producción
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Configuración SameSite
-  });
-  res.clearCookie("isGoogleAuth", {
-    path: "/",
-    secure: process.env.NODE_ENV === "production", // Asegúrate de que sea seguro en producción
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Configuración SameSite
-  });
-  
+  const deleteCookie = (name) => {
+    res.clearCookie(name, {
+      path: "/",
+      secure: process.env.NODE_ENV === "production", // true en producción
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Configuración SameSite
+      domain: process.env.NODE_ENV === "production" ? ".onrender.com" : undefined, // Dominio en producción
+    });
+  };
+
+  // Eliminar cookies específicas
+  deleteCookie("connect.sid");
+  deleteCookie("userEmail");
+  deleteCookie("isGoogleAuth");
+
   // Responder con un mensaje de sesión cerrada
   res.send("Sesión cerrada correctamente.");
 });
