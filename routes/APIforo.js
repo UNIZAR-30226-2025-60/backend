@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-
+const { sequelize } = require('../db/db');
 const { 
   agregarRespuesta, 
   obtenerRespuestasPorPregunta, 
@@ -265,6 +265,52 @@ router.get('/obtenerNumeroRespuestas', async (req, res) => {
   }
 });
 
+// Ruta para eliminar una pregunta de un usuario del foro
+router.delete('/BorroPreguntas/:id', async (req, res) => {
+  const { id } = req.params;
 
+  try {
+    const result = await sequelize.query(
+      'DELETE FROM pregunta WHERE id = $1 RETURNING *',
+      {
+        bind: [id],
+        type: sequelize.QueryTypes.DELETE
+      }
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Pregunta no encontrada' });
+    }
+
+    res.status(200).json({ mensaje: 'Pregunta eliminada con éxito' });
+  } catch (error) {
+    console.error('Error al eliminar la pregunta:', error);
+    res.status(500).json({ error: 'Error al eliminar la pregunta' });
+  }
+});
+
+// Ruta para eliminar una respuesta de un usuario del foro
+router.delete('/BorroRespuestas/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await sequelize.query(
+      'DELETE FROM respuesta WHERE id = $1 RETURNING *',
+      {
+        bind: [id],
+        type: sequelize.QueryTypes.DELETE
+      }
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Respuesta no encontrada' });
+    }
+
+    res.status(200).json({ mensaje: 'Respuesta eliminada con éxito' });
+  } catch (error) {
+    console.error('Error al eliminar la respuesta:', error);
+    res.status(500).json({ error: 'Error al eliminar la respuesta' });
+  }
+});
 
 module.exports = router;
