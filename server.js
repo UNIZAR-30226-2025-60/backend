@@ -8,7 +8,7 @@ const fs = require('fs');
 const path = require('path');
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
-const rateLimit = require('express-rate-limit');// voy a limitar también las peticiones a la api, para evitar ataques de denegación de servicio
+// const rateLimit = require('express-rate-limit');// voy a limitar también las peticiones a la api, para evitar ataques de denegación de servicio
 
 const { sequelize, pool } = require("./db/db");
 const { User } = require("./models/User");  
@@ -38,13 +38,13 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Para limitación de peticiones (rate limiting)
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100, // Limitar a 100 peticiones por IP
-  message: 'Demasiadas peticiones, por favor intente más tarde.'
-});
+// const limiter = rateLimit({
+//   windowMs: 15 * 60 * 1000, // 15 minutos
+//   max: 100, // Limitar a 100 peticiones por IP
+//   message: 'Demasiadas peticiones, por favor intente más tarde.'
+// });
 
-app.use(limiter); // Aplicar rate limiting a todas las rutas
+// app.use(limiter); // Aplicar rate limiting a todas las rutas
 
 
 if( process.env.NODE_ENV !== 'test'){
