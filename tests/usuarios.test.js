@@ -11,7 +11,6 @@ describe('Rutas de Usuarios', () => {
       console.warn('Usuario no encontrado, ¿no insertaste el testuser en la DB?');
     } else {
       expect(res.statusCode).toBe(200);
-      // Debe tener { correo: 'bookly@gmail.com', ... }
       expect(res.body).toHaveProperty('correo', 'bookly@gmail.com');
     }
   });
@@ -20,12 +19,9 @@ describe('Rutas de Usuarios', () => {
     const res = await request(app)
       .get('/api/usuario/sssdfiidi8v8d8fgv7asd8fvc999s9d88@gmail.com');
     expect([404, 500]).toContain(res.statusCode); 
-    // Tu backend hace 404 si no lo encuentra
   });
 
   it('Cambia la contraseña si la actual es válida', async () => {
-    // 1) Asegurarse de tener un usuario con pass '123456789'
-    // 2) Llamar al endpoint
     const res = await request(app)
       .post('/api/usuario/cambiar-contrasena')
       .send({

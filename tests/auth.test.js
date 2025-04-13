@@ -1,12 +1,8 @@
 // tests/auth.test.js
 const request = require('supertest');
-const { app } = require('../server'); // Importamos app
+const { app } = require('../server'); 
 
 describe('Pruebas de autenticación de usuario', () => {
-  // Supongamos que tenemos en DB un usuario con:
-  //   correo = 'bookly@gmail.com'
-  //   contrasena encriptada = '123456789' 
-  
   it('Falla si el usuario no existe', async () => {
     const res = await request(app)
       .post('/api/login')
@@ -37,7 +33,6 @@ describe('Pruebas de autenticación de usuario', () => {
         contrasena: '123456789'
       });
     expect(res.statusCode).toBe(200);
-    // Tu backend envía el user en JSON
     expect(res.body).toHaveProperty('correo', 'bookly@gmail.com');
   });
 });

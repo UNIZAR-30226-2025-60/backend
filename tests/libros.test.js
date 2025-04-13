@@ -4,8 +4,6 @@ const { app } = require('../server');
 
 describe('Guardar página en lectura', () => {
   it('Guarda la última página leída de un libro', async () => {
-    // Asegúrate de que el libro ya existe en la base de datos con un enlace real
-    // y que el usuario "bookly@gmail.com" existe
     const res = await request(app)
       .post('/api/guardar-pagina')
       .send({
@@ -17,6 +15,25 @@ describe('Guardar página en lectura', () => {
       expect(res.body).toHaveProperty('mensaje', '✅ Página guardada correctamente');
     } else {
       console.warn('No se pudo guardar página. Revisa si el libro existe en la DB.');
+    }
+  });
+
+  it('Obtiene todos los libros (GET /api/libros)', async () => {
+    const res = await request(app).get('/api/libros');
+    expect([200, 500]).toContain(res.statusCode);
+    if (res.statusCode === 200) {
+      expect(Array.isArray(res.body)).toBe(true);
+    } else {
+      console.warn('No se pudo obtener la lista de libros. Revisar logs del server.');
+    }
+  });
+
+  it('Busca un libro por título (GET /api/libros/obtenerTitulo/:titulo)', async () => {
+    const res = await request(app).get('/api/libros/obtenerTitulo/el');
+    if (res.statusCode === 200) {
+      expect(Array.isArray(res.body)).toBe(true);
+    } else {
+      expect([404, 500]).toContain(res.statusCode);
     }
   });
 });

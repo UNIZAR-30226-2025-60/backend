@@ -6,8 +6,12 @@ const { Strategy: GoogleStrategy } = require("passport-google-oauth20");
 require("dotenv").config();
 const fs = require('fs');
 const path = require('path');
+const { spawn } = require('child_process');
+
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
+
+
 // const rateLimit = require('express-rate-limit');// voy a limitar también las peticiones a la api, para evitar ataques de denegación de servicio
 
 const { sequelize, pool } = require("./db/db");
@@ -117,23 +121,6 @@ app.use(express.json());
 //   .then(() => console.log("✅ Base de datos sincronizada."))
 //   .catch((err) => console.error("❌ Error al sincronizar DB:", err));
 
-if (require.main === module) {
-  sequelize.sync({ force: false }) // Cambia a `true` si deseas sobrescribir la estructura
-    .then(() => console.log("✅ Base de datos sincronizada."))
-    .catch((err) => console.error("❌ Error al sincronizar DB:", err));
-
-  // Ejecutar triggers.sql
-  (async () => {
-    try {
-      const triggersPath = path.join(__dirname, 'triggers.sql');
-      const triggersSQL = fs.readFileSync(triggersPath, 'utf-8');
-      await pool.query(triggersSQL);
-      console.log('✅ Triggers ejecutados correctamente.');
-    } catch (error) {
-      console.error('❌ Error al ejecutar triggers:', error);
-    }
-  })();
-}
 
 // Configuración de sesión
 app.use(
@@ -202,23 +189,6 @@ passport.deserializeUser(async (correo, done) => {
 });
 
 
-if (require.main === module) {
-  (async () => {
-    try {
-      console.log("🛠 Conectando a la base de datos");
-      await sequelize.authenticate();
-      console.log('✅ Conexión a la base de datos establecida con éxito.');
-
-      await sequelize.sync({ force: false });
-      console.log("✅ Base de datos sincronizada.");
-    } catch (error) {
-      console.error('❌ Error al conectar o sincronizar la base de datos:', error);
-      process.exit(1);
-    }
-  })();
-}
-
-
 // Usar rutas
 app.use("/auth", authRoutes);
 app.use("/api", userRoutes);
@@ -246,13 +216,60 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({ message: 'Base de datos OK' });
 });
 
-
-
-// Iniciar servidor
 if (require.main === module) {
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Servidor corriendo en http://0.0.0.0:${PORT}`);
-  });
+  (async () => {
+    try {
+      console.log("🛠 Conectando a DB y haciendo sync...");
+      await sequelize.authenticate();
+      console.log("✅ Conexión DB ok.");
+
+      await sequelize.sync({ force: false });
+      console.log("✅ Base de datos sincronizada.");
+
+      try {
+        const triggersPath = path.join(__dirname, "triggers.sql");
+        const triggersSQL = fs.readFileSync(triggersPath, "utf-8");
+        await pool.query(triggersSQL);
+        console.log("✅ Triggers ejecutados correctamente.");
+      } catch (err) {
+        console.error("❌ Error al ejecutar triggers:", err);
+      }
+
+      app.listen(PORT, "0.0.0.0", () => {
+        console.log(`🚀 Servidor corriendo en http://0.0.0.0:${PORT}`);
+      });
+
+      console.log("Se están ejecutando los tests...");
+
+      const isWindows = process.platform === "win32";
+      const npmCmd = isWindows ? "npm.cmd" : "npm";
+
+      const child = spawn(npmCmd, ["run", "test", "--", "--coverage"], {
+        cwd: __dirname,
+        shell: true,         
+      });
+
+      let output = "";
+      child.stdout.on("data", (data) => {
+        output += data.toString();
+      });
+      child.stderr.on("data", (data) => {
+        output += data.toString();
+      });
+
+      child.on("close", (code) => {
+        if (code === 0) {
+          console.log("Todos los tests se han pasado!");
+        } else {
+          console.log("Han fallado algunos tests.");
+          console.log(output);
+        }
+      });
+    } catch (error) {
+      console.error("❌ Error conectando DB:", error);
+      process.exit(1);
+    }
+  })();
 }
 
 module.exports = { app, sequelize };

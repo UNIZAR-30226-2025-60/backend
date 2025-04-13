@@ -7,6 +7,5 @@ describe('Cerrar sesión', () => {
     const res = await request(app).get('/api/logout');
     expect(res.statusCode).toBe(200); 
     expect(res.text).toContain('Sesión cerrada correctamente.');
-    // Podríamos también examinar cabeceras para ver si se limpian cookies
   });
 });
