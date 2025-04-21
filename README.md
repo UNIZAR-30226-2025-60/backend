@@ -11,12 +11,12 @@ Backend para la plataforma **Bookly**, construida con Node.js y Express, usando 
 
 ## 📁 Estructura del Proyecto
 
-📁 db/             → Configuración de Sequelize y conexión a Neon
-📁 models/         → Definición de modelos de base de datos y consultas complejas
-📁 routes/         → Endpoints de la API REST
-📁 tests/          → Pruebas automáticas básicas
-server.js         → Punto de entrada principal del servidor
-.env              → Variables de entorno
+- **📁 db/** → Configuración de Sequelize y conexión a Neon
+- **📁 models/** → Definición de modelos de base de datos y consultas complejas
+- **📁 routes/** → Endpoints de la API REST
+- **📁 tests/** → Pruebas automáticas básicas
+- **server.js** → Punto de entrada principal del servidor
+- **.env** → Variables de entorno
 
 ---
 
