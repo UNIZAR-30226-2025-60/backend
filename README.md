@@ -1,41 +1,53 @@
-# frontend-movil
-TUTORIAL
-    PASO Nº0
-        git pull origin main
-    PASO Nº1
-        Nos metemos en la carpeta en la que queremos trabajar (backend, frontend-movil, frontend-web) cd backend.
-    PASO Nº2
-        Creamos SIEMPRE una rama para trabajar en local, es decir, los cambios que hagas en los archivos y los que creas o destruyes solo se hace en local.
-        git checkout -b nombreRama
-        Siendo nombreRama el nombre que tu quieras, con el checkout te cambias de rama y con el -b creas la rama.
-        Si solo quieres cambiarte de rama git checkout nombreADondeVas
-        Y si solo quieres crear rama git branch nuevaRama, siendo nuevaRama el nombre de la que creas.
-        Y si solo quieres ver en que rama estas git branch y te saldra con asterisco o en verde en la que estás.
+# 📚 Bookly - Backend
 
-    PASO Nº3
-        Ahora podemos comprobar en la rama en la que estamos git branch, y tendrá que ser la que hemos creado anteriormente.
-        Si coincide ya estamos en disposición de empezar a modificar, añadir o eliminar ficheros.
+Backend para la plataforma **Bookly**, construida con Node.js y Express, usando Sequelize para la conexión a una base de datos PostgreSQL alojada en Neon. El backend se lanza automáticamente desde Render en caso de no estar en local.
 
-        Una vez acabemos con nuestra tarea tendremos que guardar los cambios (en nuestra rama)
-        1- git add .
-        2- git commit -m “Cambio”
-        3- git push origin nombreRama
-        Ahora ya tenemos los cambios que hemos hecho en local subidos a una rama, pero esta no es la rama main a la que todos tienen acceso.
+- **Producción:** https://backend-dcy8.onrender.com  
+- **Ambiente:** Node.js, Express, PostgreSQL (Neon)  
+- **Lenguaje:** JavaScript  
+- **CI/CD:** Despliegue automático vía commits en `main`
 
-    PASO Nº4
-        Ahora haremos un  git checkout main para volver a la rama main(la compartida entre todos) y con git pull origin main me bajo los posibles cambios. Unimos nuestra rama con la compartida, git merge ramaPrueba y git push origin main (subes los cambios definitivamente a lo compartido por todos)
+---
 
+## 📁 Estructura del Proyecto
 
+📁 db/             → Configuración de Sequelize y conexión a Neon
+📁 models/         → Definición de modelos de base de datos y consultas complejas
+📁 routes/         → Endpoints de la API REST
+📁 tests/          → Pruebas automáticas básicas
+server.js         → Punto de entrada principal del servidor
+.env              → Variables de entorno
 
+---
 
+## 🔧 Instalación y entorno local
 
-    git pull origin main(te bajas lo último que ha hecho alguien)
-    git checkout -b ramaPrueba (Creas la rama con el -b y te cambias a la vez con el checkout).
-    //modifico lo que quiera
-    git add . (para guardar todos los cambios que has hecho).
-    git commit -m “Cambio”
-    git push origin ramaPrueba
-    git checkout main (te cambias a la rama principal).
-    git pull origin main (para bajarte los cambios de la rama que especificas despues del origin).
-    git merge ramaPrueba (“fusionas la rama”).
-    git push origin main (subes los cambios definitivamente).
+### 1. Crear archivo `.env` en la raíz con el siguiente contenido:
+```env
+GOOGLE_CLIENT_ID=18266960434-qc5ctiqq9lhgbbiolqn4fmg4n7dao3pu.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=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
+GOOGLE_REDIRECT_URI=http://localhost:3000/auth/google/callback
+SESSION_SECRET=19a233f0dd7604f1bab7e10597546934442765d0bd08de5fc12fd5d3e46db2413c55302d871304ab79115dea77c0a2179ba17328364d5d7d58e47bad8e17e8d0
+DATABASE_URL=postgresql://neondb_owner:npg_2vWEKt5TQwIV@ep-muddy-frog-a25judd6-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require
+PORT=3000
+VUE_APP_API_MISTRAL=NU60s1BRAKLz1Tmhav0rD4DghDuVYld7
+FRONTEND_URL=http://localhost:8081
+RENDER_FRONTEND_URL=https://booklyweb-469w.onrender.com
+RENDER_GOOGLE_REDIRECT_URI=https://backend-dcy8.onrender.com/auth/google/callback
+```
+
+### 2. Instala todas las dependencias mediante los comandos:
+```bash
+npm install
+npm install passport passport-google-oauth20 express-session
+npm install sequelize pg pg-hstore
+npm install cors
+npm install express pg cors dotenv
+npm install nodemon --save-dev 
+npm install express pg dotenv cors bcrypt jsonwebtoken
+```
+
+### 3. Inicia el servidor en local:
+```bash
+node server.js
+```
