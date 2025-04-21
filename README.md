@@ -45,6 +45,7 @@ npm install cors
 npm install express pg cors dotenv
 npm install nodemon --save-dev 
 npm install express pg dotenv cors bcrypt jsonwebtoken
+npm install swagger-jsdoc
 ```
 
 ### 3. Inicia el servidor en local:
