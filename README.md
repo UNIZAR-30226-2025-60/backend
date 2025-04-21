@@ -52,3 +52,8 @@ npm install swagger-jsdoc
 ```bash
 node server.js
 ```
+
+📄 **Documentación de la API**
+
+La documentación de la API está disponible accediendo a: http://localhost:3000/api-docs
+Para visualizarla correctamente, asegúrate de tener tanto el **backend** como el **frontend web** ejecutándose en local.
