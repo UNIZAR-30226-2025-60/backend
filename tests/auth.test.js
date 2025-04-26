@@ -2,7 +2,28 @@
 const request = require('supertest');
 const { app } = require('../server'); 
 
+
 describe('Pruebas de autenticación de usuario', () => {
+  const testUser = {
+    correo: 'bookly@gmail.com',
+    nombre: 'Bookly',
+    contrasena: '123456789'
+  };
+
+  beforeAll(async () => {
+    // registra al usuario si no existiera
+    await request(app).post('/api/registro').send(testUser);
+  });
+
+  it('Inicia sesión con credenciales válidas', async () => {
+    const res = await request(app)
+      .post('/api/login')
+      .send({ correo: testUser.correo, contrasena: testUser.contrasena });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveProperty('correo', testUser.correo);
+  });
+
   it('Falla si el usuario no existe', async () => {
     const res = await request(app)
       .post('/api/login')

@@ -88,29 +88,26 @@ if( process.env.NODE_ENV !== 'test'){
 app.set("trust proxy", 1);// Para que las cookies funcionen en producción(render)
 
 // Configuración de CORS
-const allowedOrigins = [
-  process.env.FRONTEND_URL || "http://localhost:8081",
-  process.env.RENDER_FRONTEND_URL || "https://booklyweb-469w.onrender.com"
-];
+const allowedOrigins = new Set([
+  process.env.FRONTEND_URL,
+  process.env.RENDER_FRONTEND_URL
+]);
 
-// app.use(
-//   cors({
-//     origin: allowedOrigins,
-//     credentials: true,
-//   })
-// );
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (!origin || allowedOrigins.has(origin)) {
         callback(null, true);
       } else {
+        console.warn(`❌ CORS bloqueado: ${origin}`);
         callback(new Error("Not allowed by CORS"));
       }
     },
-    credentials: true, 
+    credentials: true,
   })
 );
+
+
 
 // Middleware para procesar JSON
 app.use(express.json());
